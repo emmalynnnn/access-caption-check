@@ -88,7 +88,8 @@ Create a trigger in Monday that will kick off the process to run a report that w
 * Started setting up shell vue project
 
 ### 4.18.23
-* 
+* Finishing todos tutorial
+* Beginning to adapt UI
 
 ## TODO
 * Finish working through Vue tutorial
