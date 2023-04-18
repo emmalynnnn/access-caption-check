@@ -85,6 +85,9 @@ Create a trigger in Monday that will kick off the process to run a report that w
 
 ### 4.17.23
 * Read through project requirements
+* Started setting up shell vue project
+
+### 4.18.23
 * 
 
 ## TODO
