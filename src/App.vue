@@ -1,39 +1,27 @@
 <template>
   <div id="app">
-    <h1>YTCA-USU</h1>
-    <p>Created and currently maintained by Emma Lynn (a02391851@usu.edu)</p>
+    <h1>YouTube Caption Auditor (YTCA-USU)</h1>
+    <p>Built and currently maintained by Emma Lynn (a02391851@usu.edu).</p>
+    <p>Based off Terrill Thompson (University of Washington)'s <a href="https://github.com/terrill/YTCA">YTCA</a>.</p>
     <p>Use the following form to generate a report regarding the indicated YouTube channel(s). For YTCA-USU source
     code and documentation, see <a href="https://github.com/emmalynnnn/access-YTCA-USU">YTCA-USU on GitHub</a>.</p>
-    <to-do-form @todo-added="addToDo"></to-do-form>
-    <h2>{{listSummary}}</h2>
-    <ul aria-labelledby="list-summary" class="stack-large">
-      <li v-for="item in ToDoItems" :key="item.id">
-        <to-do-item
-            :label="item.label"
-            :done="item.done"
-            :id="item.id"
-            @checkbox-changed="updateDoneStatus(item.id)"
-            @item-deleted="deleteToDo(item.id)"
-            @item-edited="editToDo(item.id, $event)">
-        </to-do-item>
+    <channel-info-form @todo-added="addToDo"></channel-info-form>
 
-      </li>
-    </ul>
   </div>
 </template>
 
 <script>
 import "./assets/app.css";
 
-import ToDoItem from "./components/ToDoItem.vue";
-import ToDoForm from "./components/ToDoForm";
+//import ToDoItem from "./components/ToDoItem.vue";
+import ChannelInfoForm from "./components/ChannelInfoForm";
 import uniqueId from "lodash.uniqueid";
 
 export default {
   name: 'App',
   components: {
-    ToDoItem,
-    ToDoForm,
+    //ToDoItem,
+    ChannelInfoForm,
   },
 
   data() {

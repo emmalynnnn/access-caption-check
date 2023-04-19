@@ -1,4 +1,7 @@
 /* Global styles */
+.one-line {
+    overflow: hidden;
+}
 .btn {
     padding: 0.8rem 1rem 0.7rem;
     border: 0.2rem solid #4d4d4d;
@@ -18,7 +21,8 @@
 }
 .btn__primary {
     color: #fff;
-    background-color: #000;
+    background-color: #569DAA/*#000*/;
+    width: 40%
 }
 .btn-group {
     display: flex;
@@ -32,12 +36,12 @@
 }
 .label-wrapper {
     margin: 0;
-    flex: 0 0 100%;
-    text-align: center;
+    /*flex: 0 0 100%;*/
+    /*text-align: center;*/
 }
 [class*="__lg"] {
-    display: inline-block;
-    width: 100%;
+    /*display: inline-block;*/
+    /*width: 100%;*/
     font-size: 1.9rem;
 }
 [class*="__lg"]:not(:last-child) {
@@ -80,8 +84,7 @@
 #app {
     background: #fff;
     margin: 2rem 0 4rem 0;
-    padding: 1rem;
-    padding-top: 0;
+    padding: 0 1rem 1rem;
     position: relative;
     box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2), 0 2.5rem 5rem 0 rgba(0, 0, 0, 0.1);
 }
@@ -90,6 +93,23 @@
         padding: 4rem;
     }
 }
+
+.a-box {
+    display: inline-block;
+    margin-right: 50px;
+    margin-bottom: 15px;
+}
+
+.a-form {
+    background: #F0F0F0;
+    padding: 15px;
+    border: 2px solid darkgray;
+}
+
+.button-box {
+    text-align: center;
+}
+
 /*#app > * {
     max-width: 50rem;
     margin-left: auto;

@@ -91,8 +91,11 @@ Create a trigger in Monday that will kick off the process to run a report that w
 * Finishing todos tutorial
 * Beginning to adapt UI
 
+### 4.19.23
+* Created dashboard UI
+
+
 ## TODO
-* Finish working through Vue tutorial
 * Build out UI for application
 
 ## Sources/References
