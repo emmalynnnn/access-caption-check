@@ -99,18 +99,39 @@ export default {
     auditTheChannel(channelId, format, pubAfter, pubBefore) {
       //console.log(channelId, format, pubAfter, pubBefore);
 
+      let emptyInfo = {title: "", url: "",
+        date: "", dur: "", cap: "", views: 0, profile: ""};
+      //let ourVidInfo = [];
+
       this.auditChannel(channelId, format, pubAfter, pubBefore)
           .then (results => {
             console.log("We have gotten the results back!!");
             console.log(results);
 
+            this.noData = false;
+
             this.numVid = results.numVid;
             this.numCap = results.numCap;
             this.totSec = results.totSec;
             this.secCap = results.secCap;
-            this.vidInfo = results.vidInfo;
 
-            this.noData = false;
+            for (let i = 0; i < results.vidInfo.length; i++) {
+              this.vidInfo.push(emptyInfo);
+              var globalVidInfoPls = this.vidInfo;
+              results.vidInfo[i]
+                  .then(function(theVal) {
+                    console.log("On video number " + i);
+                    console.log(theVal);
+                    //this.vidInfo[i] = theVal;
+                    globalVidInfoPls[i] = theVal;
+                  });
+              //ourVidInfo.push(theVal);
+              //console.log(theVal);
+              //ourVidInfo.push(theVal);
+              //this.vidInfo.push(results.vidInfo[i]);
+            }
+            console.log("Here are all of the videos: " + this.vidInfo);
+
           });
     }
   },

@@ -96,14 +96,20 @@ Create a trigger in Monday that will kick off the process to run a report that w
 
 ### 4.20.23
 * Starting to get YouTube info
+* It looks like the original YTCA uses the search queries :/
+  * Running it on USU Opera costs 123 units
+  * I believe running my tool (when it is complete) on USU Opera will only cost 10 units
+  * Cool cool cool
+* 
 
 
 ## TODO
-* Build out UI for application
+* Date filtering
+* Pagination
+
 
 Dependencies:
 * Vue
-* Vue Router
 * 
 
 ## Sources/References
