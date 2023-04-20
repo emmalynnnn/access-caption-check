@@ -107,6 +107,7 @@ Create a trigger in Monday that will kick off the process to run a report that w
 * Date filtering
 * Pagination
 * Table formatting
+* Video on profile
 
 
 Dependencies:

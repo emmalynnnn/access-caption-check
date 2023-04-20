@@ -29,29 +29,56 @@ module.exports = {
             })
             .then( response => response.json() )
             .then( json => {
-              //console.log(json);
               //TODO: pagination!!
+
               let playlistItemIds = [];
               for (let i = 0; i < json.items.length; i++) {
                 playlistItemIds.push(json.items[i].id);
               }
-              //console.log(playlistItemIds);
+
               for (let i = 0; i < playlistItemIds.length; i++) {
-                url = "https://youtube.googleapis.com/youtube/v3/playlistItems?part=snippet%2CcontentDetails&id=" +
+                url = "https://youtube.googleapis.com/youtube/v3/playlistItems?part=snippet%2CcontentDetails%2Cstatus&id=" +
                     playlistItemIds[i] + "&maxResults=25&key=" + API_KEY;
                 resultsObj.vidInfo.push(fetch(url)
                     .then( response => response.json() )
                     .then( json => {
+                      console.log(json);
+
+                      let id = json.items[0].snippet.resourceId.videoId;
+
+                      url = "https://www.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails%2Cstatistics&" +
+                          "id=" + id + "&key=" + API_KEY;
+                      return fetch(url);
+                    })
+                    .then( response => response.json() )
+                    .then( json => {
                       //console.log(json);
+
+                      let durISO = json.items[0].contentDetails.duration;
+                      //TODO: let formattedDur =
+
                       let info = {title: json.items[0].snippet.title,
-                        url: "https://www.youtube.com/watch?v=" + json.items[0].snippet.resourceId.videoId,
+                        url: "https://www.youtube.com/watch?v=" + json.items[0].id,
                         date: json.items[0].snippet.publishedAt.substring(0, json.items[0].snippet.publishedAt.indexOf("T")),
-                        dur: 0, cap: "Yes", views: 0, profile: "Yes"};
-                      //resultsObj.vidInfo.push(info);
+                        dur: durISO,
+                        views: json.items[0].statistics.viewCount, profile: "Yes"};
+
+                      if (json.items[0].contentDetails.caption) {
+                        info.cap = "Yes";
+                      } else {
+                        info.cap = "No";
+                      }
+
+                      /*
+                      PT12M53S
+                      00:12:53
+                      */
+
                       return info;
-                    }))
+                    })
+                );
               }
-              //console.log(resultsObj);
+
               return resultsObj;
             })
 
