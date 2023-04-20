@@ -5,23 +5,24 @@
 
 
     <div class="a-box">
+      <p>UCJVp8EsMap1PQH-UIxQ00EA</p>
       <label for="channel-id-input" class="label__lg">
-        YouTube Channel ID:
+        <span style="color: brown">*</span>YouTube Channel ID:
       </label>
       <input
           type="text"
           id="channel-id-input"
           name="channel-id"
           autocomplete="off"
-          v-model.lazy.trim="label"/>
+          v-model.lazy.trim="channelId"/>
     </div>
 
 
     <div class="a-box">
       <label for="format-input" class="label__lg">
-        Format:
+        <span style="color: brown">*</span>Format:
       </label>
-      <select name="format-input" class="form-select">
+      <select name="format-input" class="form-select" v-model.lazy.trim="format">
         <option value="HTML">HTML</option>
       </select>
     </div>
@@ -36,7 +37,7 @@
           id="after-date-input"
           name="after-date"
           autocomplete="off"
-          v-model.lazy.trim="label"
+          v-model.lazy.trim="pubAfter"
           class="input__lg" />
     </div>
 
@@ -49,12 +50,12 @@
           id="before-date-input"
           name="before-date"
           autocomplete="off"
-          v-model.lazy.trim="label"
+          v-model.lazy.trim="pubBefore"
           class="input__lg" />
     </div>
 
+    <p><span style="color: brown">*</span>Required Field</p>
 
-    <br>
 
     <div class="button-box">
       <button type="submit" class="btn btn__primary btn__lg">Submit</button>
@@ -64,19 +65,27 @@
 
 <script>
 export default {
+  emits: ["form-submitted"],
   methods: {
     onSubmit() {
-      if (this.label === "") {
+      if (this.channelId === "" || this.format === "") {
+        //These fields are required!!
         return;
       }
-      this.$emit("todo-added", this.label);
-      this.label = "";
+      this.$emit("form-submitted", this.channelId, this.format, this.pubAfter, this.pubBefore);
+      this.channelId = "";
+      this.format = "";
+      this.pubAfter = "";
+      this.pubBefore = "";
     },
   },
 
   data() {
     return {
-      label: "",
+      channelId: "",
+      format: "",
+      pubAfter: "",
+      pubBefore: "",
     }
   }
 };

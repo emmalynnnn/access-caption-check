@@ -94,9 +94,17 @@ Create a trigger in Monday that will kick off the process to run a report that w
 ### 4.19.23
 * Created dashboard UI
 
+### 4.20.23
+* Starting to get YouTube info
+
 
 ## TODO
 * Build out UI for application
+
+Dependencies:
+* Vue
+* Vue Router
+* 
 
 ## Sources/References
 

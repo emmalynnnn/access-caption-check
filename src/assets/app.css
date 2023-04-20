@@ -126,3 +126,51 @@
     margin: 0;
     margin-bottom: 1rem;
 }*/
+
+table {
+    border: 1px solid black;
+    border-collapse: collapse;
+    text-align: left;
+}
+th, td {
+    border: 1px solid black;
+    padding: 1em;
+}
+th[scope="col"] {
+    padding: 1em;
+    vertical-align: bottom;
+}
+table.sortable th[scope="col"]:hover {
+    text-decoration: underline;
+    cursor: pointer;
+}
+td.data {
+    text-align: right;
+}
+td a {
+    color: #474747;
+    text-decoration: underline;
+}
+tr.totals td {
+    font-weight: bold;
+}
+table.summary tr.goodChannel th,
+table.summary tr.goodChannel td {
+    background-color: #99FF99; /* light green */
+}
+table.summary tr.badChannel th,
+table.summary tr.badChannel td {
+    background-color: #FFD7D7; /* light red */
+}
+table.details {
+    margin-left: 1em;
+}
+td.Yes {
+    color: #093;
+}
+td.No {
+    color: #C00;
+}
+a {
+    color: #0D4C92;
+}
