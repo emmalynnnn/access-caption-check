@@ -45,12 +45,13 @@ module.exports = {
                       //console.log(json);
                       let info = {title: json.items[0].snippet.title,
                         url: "https://www.youtube.com/watch?v=" + json.items[0].snippet.resourceId.videoId,
-                        date: json.items[0].snippet.publishedAt, dur: 0, cap: "Yes", views: 0, profile: "Yes"};
+                        date: json.items[0].snippet.publishedAt.substring(0, json.items[0].snippet.publishedAt.indexOf("T")),
+                        dur: 0, cap: "Yes", views: 0, profile: "Yes"};
                       //resultsObj.vidInfo.push(info);
                       return info;
                     }))
               }
-              console.log(resultsObj);
+              //console.log(resultsObj);
               return resultsObj;
             })
 

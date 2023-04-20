@@ -11,8 +11,8 @@
 
     <div v-else>
       <h1>YouTube Caption Auditor (YTCA) Report</h1>
-      <p><strong>Apr 20, 2023</strong></p>
-      <h2>Channel 1 of 1:</h2>
+      <p><strong>{{currDate}}</strong></p>
+      <!--<h2>Channel 1 of 1:</h2>-->
       <ul>
         <li>Number of videos: <strong>{{numVid}}</strong></li>
         <li>Number captioned: <strong>{{numCap}} ({{percentCap}}%)</strong></li>
@@ -105,8 +105,8 @@ export default {
 
       this.auditChannel(channelId, format, pubAfter, pubBefore)
           .then (results => {
-            console.log("We have gotten the results back!!");
-            console.log(results);
+            //console.log("We have gotten the results back!!");
+            //console.log(results);
 
             this.noData = false;
 
@@ -120,8 +120,8 @@ export default {
               var globalVidInfoPls = this.vidInfo;
               results.vidInfo[i]
                   .then(function(theVal) {
-                    console.log("On video number " + i);
-                    console.log(theVal);
+                    //console.log("On video number " + i);
+                    //console.log(theVal);
                     //this.vidInfo[i] = theVal;
                     globalVidInfoPls[i] = theVal;
                   });
@@ -130,7 +130,7 @@ export default {
               //ourVidInfo.push(theVal);
               //this.vidInfo.push(results.vidInfo[i]);
             }
-            console.log("Here are all of the videos: " + this.vidInfo);
+            //console.log("Here are all of the videos: " + this.vidInfo);
 
           });
     }
@@ -143,6 +143,10 @@ export default {
       }
       return (this.numVid / this.numCap) * 100
     },
+    currDate() {
+      let dateObj = new Date();
+      return dateObj.toLocaleDateString();
+    }
   }
 
 };
