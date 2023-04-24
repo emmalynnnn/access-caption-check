@@ -5,7 +5,8 @@
 
 
     <div class="a-box">
-      <p>UCJVp8EsMap1PQH-UIxQ00EA</p>
+      <p>USU Opera: UCJVp8EsMap1PQH-UIxQ00EA</p>
+      <p>Audiology: UCilhAOYJnG7cTZquud__07Q</p>
       <label for="channel-id-input" class="label__lg">
         <span style="color: brown">*</span>YouTube Channel ID:
       </label>

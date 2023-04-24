@@ -1,4 +1,5 @@
 <script>
+const converter = require("./assets/dur-iso");
 
 module.exports = {
   // add here all the methods, props… to share
@@ -24,12 +25,12 @@ module.exports = {
               resultsObj.numVid = json.items[0].statistics.videoCount;
               let playlistId = json.items[0].contentDetails.relatedPlaylists.uploads;
               //console.log(playlistId);
-              url = "https://youtube.googleapis.com/youtube/v3/playlistItems?playlistId=" + playlistId + "&key=" + API_KEY
+              url = "https://youtube.googleapis.com/youtube/v3/playlistItems?playlistId=" + playlistId + "&key=" +
+                  API_KEY + "&maxResults=" + resultsObj.numVid;
               return fetch(url);
             })
             .then( response => response.json() )
             .then( json => {
-              //TODO: pagination!!
 
               let playlistItemIds = [];
               for (let i = 0; i < json.items.length; i++) {
@@ -38,7 +39,8 @@ module.exports = {
 
               for (let i = 0; i < playlistItemIds.length; i++) {
                 url = "https://youtube.googleapis.com/youtube/v3/playlistItems?part=snippet%2CcontentDetails%2Cstatus&id=" +
-                    playlistItemIds[i] + "&maxResults=25&key=" + API_KEY;
+                    playlistItemIds[i] + "&maxResults=1&key=" + API_KEY;
+
                 resultsObj.vidInfo.push(fetch(url)
                     .then( response => response.json() )
                     .then( json => {
@@ -52,27 +54,26 @@ module.exports = {
                     })
                     .then( response => response.json() )
                     .then( json => {
-                      //console.log(json);
 
                       let durISO = json.items[0].contentDetails.duration;
-                      //TODO: let formattedDur =
+                      let formatted = converter.convertYouTubeDuration(durISO);
+                      console.log(formatted);
 
                       let info = {title: json.items[0].snippet.title,
                         url: "https://www.youtube.com/watch?v=" + json.items[0].id,
                         date: json.items[0].snippet.publishedAt.substring(0, json.items[0].snippet.publishedAt.indexOf("T")),
-                        dur: durISO,
+                        dur: formatted, rawDur: durISO,
                         views: json.items[0].statistics.viewCount, profile: "Yes"};
+
+                      //resultsObj.totSec += converter.convertToSecond(durISO);
 
                       if (json.items[0].contentDetails.caption) {
                         info.cap = "Yes";
+                        resultsObj.numCap += 1;
+                        //resultsObj.secCap += converter.convertToSecond(durISO);
                       } else {
                         info.cap = "No";
                       }
-
-                      /*
-                      PT12M53S
-                      00:12:53
-                      */
 
                       return info;
                     })

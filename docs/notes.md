@@ -100,19 +100,23 @@ Create a trigger in Monday that will kick off the process to run a report that w
   * Running it on USU Opera costs 123 units
   * I believe running my tool (when it is complete) on USU Opera will only cost 10 units
   * Cool cool cool
-* 
+
+### 4.21.23
+* Added the rest of the channel summary data
+
+### 4.24.23
+* Fixing duration formatting
+* Fixing pagination issue for getting playlist item ids
 
 
 ## TODO
 * Date filtering
-* Pagination
 * Table formatting
 * Video on profile
 
 
 Dependencies:
 * Vue
-* 
 
 ## Sources/References
 

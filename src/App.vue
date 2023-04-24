@@ -53,7 +53,10 @@
 </template>
 
 <script>
+/* eslint-disable */
+
 import "./assets/app.css";
+const converter = require("./assets/dur-iso");
 
 //import ToDoItem from "./components/ToDoItem.vue";
 import ChannelInfoForm from "./components/ChannelInfoForm";
@@ -106,29 +109,38 @@ export default {
       this.auditChannel(channelId, format, pubAfter, pubBefore)
           .then (results => {
             //console.log("We have gotten the results back!!");
-            //console.log(results);
+            console.log(results);
 
             this.noData = false;
 
             this.numVid = results.numVid;
             this.numCap = results.numCap;
-            this.totSec = results.totSec;
+            this.totSec = 0;
             this.secCap = results.secCap;
+
+            let sumInfo = 0;
 
             for (let i = 0; i < results.vidInfo.length; i++) {
               this.vidInfo.push(emptyInfo);
               var globalVidInfoPls = this.vidInfo;
-              results.vidInfo[i]
+              sumInfo = results.vidInfo[i]
                   .then(function(theVal) {
-                    //console.log("On video number " + i);
-                    //console.log(theVal);
-                    //this.vidInfo[i] = theVal;
                     globalVidInfoPls[i] = theVal;
+                    let durSec = converter.convertToSecond(theVal.rawDur);
+                    let isCap = 0;
+                    let secCap = 0;
+                    if (theVal.cap) {
+                      isCap = 1;
+                      secCap = durSec;
+                    }
+
+                    return [durSec, isCap, secCap];
+                  })
+                  .then( value => {
+                    this.totSec += value[0];
+                    this.numCap += value[1];
+                    this.secCap += value[2];
                   });
-              //ourVidInfo.push(theVal);
-              //console.log(theVal);
-              //ourVidInfo.push(theVal);
-              //this.vidInfo.push(results.vidInfo[i]);
             }
             //console.log("Here are all of the videos: " + this.vidInfo);
 
@@ -141,7 +153,8 @@ export default {
       if (this.numCap === 0) {
         return 0;
       }
-      return (this.numVid / this.numCap) * 100
+      console.log("We have " + this.numVid + " videos and these many are captioned: " + this.numCap);
+      return Math.round((this.numCap / this.numVid) * 100);
     },
     currDate() {
       let dateObj = new Date();
