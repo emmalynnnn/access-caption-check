@@ -1,4 +1,5 @@
 <script>
+/* eslint-disable */
 const converter = require("./assets/dur-iso");
 
 module.exports = {
@@ -10,13 +11,25 @@ module.exports = {
       console.log("Auditing " + channelId);
       console.log(channelId, format, pubAfter, pubBefore);
 
+      if (pubAfter) {
+        var yearAft = parseInt(pubAfter.substring(0, 4));
+        var monthAft = parseInt(pubAfter.substring(5, 7));
+        var dayAft = parseInt(pubAfter.substring(8));
+      }
+
+      if (pubBefore) {
+        var yearBef = parseInt(pubBefore.substring(0, 4));
+        var monthBef = parseInt(pubBefore.substring(5, 7));
+        var dayBef = parseInt(pubBefore.substring(8));
+      }
+
       let resultsObj = {numVid: 0, numCap: 0, totSec: 0, secCap: 0, vidInfo: []}
 
       const API_KEY = process.env.VUE_APP_YOUTUBE_API;
 
       let url = "https://youtube.googleapis.com/youtube/v3/channels?" +
           "key=" + API_KEY +
-          "&id=" + channelId + "&part=snippet%2CcontentDetails%2Cstatistics&";
+          "&id=" + channelId + "&part=snippet%2CcontentDetails%2Cstatistics";
 
       try {
         return fetch(url)
@@ -24,34 +37,68 @@ module.exports = {
             .then( json => {
               resultsObj.numVid = json.items[0].statistics.videoCount;
               let playlistId = json.items[0].contentDetails.relatedPlaylists.uploads;
-              //console.log(playlistId);
+
+              //Getting the playlist item info
               url = "https://youtube.googleapis.com/youtube/v3/playlistItems?playlistId=" + playlistId + "&key=" +
-                  API_KEY + "&maxResults=" + resultsObj.numVid;
+                  API_KEY + "&maxResults=" + resultsObj.numVid + "&part=snippet%2CcontentDetails%2Cstatus";
               return fetch(url);
             })
             .then( response => response.json() )
             .then( json => {
 
-              let playlistItemIds = [];
               for (let i = 0; i < json.items.length; i++) {
-                playlistItemIds.push(json.items[i].id);
-              }
 
-              for (let i = 0; i < playlistItemIds.length; i++) {
-                url = "https://youtube.googleapis.com/youtube/v3/playlistItems?part=snippet%2CcontentDetails%2Cstatus&id=" +
-                    playlistItemIds[i] + "&maxResults=1&key=" + API_KEY;
+                //console.log(json);
+
+                let id = json.items[i].snippet.resourceId.videoId;
+                let name = json.items[i].snippet.title;
+                let dateUploaded = json.items[i].snippet.publishedAt;
+
+                //date filtering:
+                if (pubAfter) {
+                  if (parseInt(dateUploaded.substring(0, 4)) < yearAft) {
+                    console.log(name + " is before the year range, moving on.")
+                    resultsObj.numVid--;
+                    continue;
+                  } else if (parseInt(dateUploaded.substring(0, 4)) === yearAft) {
+                    if (parseInt(dateUploaded.substring(5, 7)) < monthAft) {
+                      console.log(name + " is before the month range, moving on.")
+                      resultsObj.numVid--;
+                      continue;
+                    } else if (parseInt(dateUploaded.substring(5, 7)) === monthAft) {
+                      if (parseInt(dateUploaded.substring(8, 10)) < dayAft) {
+                        console.log(name + " is before the day range, moving on.")
+                        resultsObj.numVid--;
+                        continue;
+                      }
+                    }
+                  }
+                }
+
+                if (pubBefore) {
+                  if (parseInt(dateUploaded.substring(0, 4)) > yearBef) {
+                    console.log(name + " is after the year range, moving on.")
+                    resultsObj.numVid--;
+                    continue;
+                  } else if (parseInt(dateUploaded.substring(0, 4)) === yearBef) {
+                    if (parseInt(dateUploaded.substring(5, 7)) > monthBef) {
+                      console.log(name + " is after the date month because " + dateUploaded.substring(5, 7) + " is greater than " + monthBef);
+                      resultsObj.numVid--;
+                      continue;
+                    } else if (parseInt(dateUploaded.substring(5, 7)) === monthBef) {
+                      if (parseInt(dateUploaded.substring(8, 10)) > dayBef) {
+                        console.log(name + " is after the day range, moving on.")
+                        resultsObj.numVid--;
+                        continue;
+                      }
+                    }
+                  }
+                }
+
+                url = "https://www.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails%2Cstatistics&" +
+                    "id=" + id + "&key=" + API_KEY;
 
                 resultsObj.vidInfo.push(fetch(url)
-                    .then( response => response.json() )
-                    .then( json => {
-                      console.log(json);
-
-                      let id = json.items[0].snippet.resourceId.videoId;
-
-                      url = "https://www.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails%2Cstatistics&" +
-                          "id=" + id + "&key=" + API_KEY;
-                      return fetch(url);
-                    })
                     .then( response => response.json() )
                     .then( json => {
 
@@ -78,27 +125,16 @@ module.exports = {
                       return info;
                     })
                 );
-              }
 
+              }
               return resultsObj;
-            })
+                })
 
 
       } catch (error) {
         console.log(error.message);
         return "";
       }
-
-      /*let results = {numVid: 18, numCap: 18, totSec: 2866, secCap: 2866, vidInfo: [
-          {title: "1 5 hours of audio editing in under 1 minute", url: "https://youtube.com",
-            date: "2021-09-20", dur: "00:00:52", cap: "Yes", views: 24, profile: "Yes"},
-          {title: "Dido and Aeneas - Highlights (USU Opera)", url: "https://youtube.com",
-            date: "2021-09-20", dur: "00:00:52", cap: "No", views: 24, profile: "Yes"},
-          {title: "Ghost Quartet - Highlights (USU Opera)", url: "https://youtube.com",
-            date: "2021-09-20", dur: "00:00:52", cap: "Yes", views: 24, profile: "Yes"},
-          {title: "Orpheus in the Underworld - Highlights (USU Opera)", url: "https://youtube.com",
-            date: "2021-09-20", dur: "00:00:52", cap: "Yes", views: 24, profile: "No"},
-        ]}*/
 
     }
 

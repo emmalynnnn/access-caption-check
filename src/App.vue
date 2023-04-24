@@ -46,6 +46,12 @@
         </tbody>
 
       </table>
+
+      <br>
+      <div class="button-box">
+        <a href="/" class="btn btn__primary btn__lg">Back</a>
+      </div>
+
     </div>
 
 

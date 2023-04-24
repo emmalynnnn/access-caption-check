@@ -98,21 +98,27 @@ Create a trigger in Monday that will kick off the process to run a report that w
 * Starting to get YouTube info
 * It looks like the original YTCA uses the search queries :/
   * Running it on USU Opera costs 123 units
-  * I believe running my tool (when it is complete) on USU Opera will only cost 10 units
+  * I believe running my tool (when it is complete) on USU Opera will only cost 6 units!!
   * Cool cool cool
 
 ### 4.21.23
 * Added the rest of the channel summary data
 
 ### 4.24.23
-* Fixing duration formatting
-* Fixing pagination issue for getting playlist item ids
+* Fixed duration formatting
+* Fixed pagination issue for getting playlist item ids
+* Added USU favicon
+* Input validation
+* Added date filtering
+* Added back button
 
 
 ## TODO
-* Date filtering
 * Table formatting
 * Video on profile
+* Save option - https://stackoverflow.com/questions/26219180/download-current-html-file?
+  * Leaving page warning
+* Stopped at 50 problem :/
 
 
 Dependencies:

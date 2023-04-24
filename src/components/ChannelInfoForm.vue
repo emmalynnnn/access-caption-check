@@ -5,8 +5,9 @@
 
 
     <div class="a-box">
-      <p>USU Opera: UCJVp8EsMap1PQH-UIxQ00EA</p>
       <p>Audiology: UCilhAOYJnG7cTZquud__07Q</p>
+      <p>Aggie Radio: UCNuyoAnorbXfITrjF2WqmAQ</p>
+      <p>USU Opera: UCJVp8EsMap1PQH-UIxQ00EA</p>
       <label for="channel-id-input" class="label__lg">
         <span style="color: brown">*</span>YouTube Channel ID:
       </label>
@@ -73,6 +74,45 @@ export default {
         //These fields are required!!
         return;
       }
+
+      if (this.pubAfter) {
+        if (this.pubAfter[4] !== "-" || this.pubAfter[7] !== "-" || this.pubAfter.length !== 10) {
+          console.log("Invalid datetime" + this.pubAfter[4]);
+          return;
+        }
+        if (isNaN(this.pubAfter.substring(0, 4)) || parseInt(this.pubAfter.substring(0, 4)) < 0) {
+          console.log("Invalid year" + this.pubAfter.substring(0, 4));
+          return;
+        }
+        if (isNaN(this.pubAfter.substring(5, 7)) || parseInt(this.pubAfter.substring(5, 7)) > 12 || parseInt(this.pubAfter.substring(5, 7)) < 0) {
+          console.log("Invalid month" + this.pubAfter.substring(5, 7));
+          return;
+        }
+        if (isNaN(this.pubAfter.substring(8)) || parseInt(this.pubAfter.substring(8)) > 31 || parseInt(this.pubAfter.substring(8)) < 0) {
+          console.log("Invalid day" + this.pubAfter.substring(8));
+          return;
+        }
+      }
+
+      if (this.pubBefore) {
+        if (this.pubBefore[4] !== "-" || this.pubBefore[7] !== "-" || this.pubBefore.length !== 10) {
+          console.log("Invalid datetime" + this.pubBefore[4]);
+          return;
+        }
+        if (isNaN(this.pubBefore.substring(0, 4)) || parseInt(this.pubBefore.substring(0, 4)) < 0) {
+          console.log("Invalid year" + this.pubBefore.substring(0, 4));
+          return;
+        }
+        if (isNaN(this.pubBefore.substring(5, 7)) || parseInt(this.pubBefore.substring(5, 7)) > 12 || parseInt(this.pubBefore.substring(5, 7)) < 0) {
+          console.log("Invalid month" + this.pubBefore.substring(5, 7));
+          return;
+        }
+        if (isNaN(this.pubBefore.substring(8)) || parseInt(this.pubBefore.substring(8)) > 31 || parseInt(this.pubBefore.substring(8)) < 0) {
+          console.log("Invalid day" + this.pubBefore.substring(8));
+          return;
+        }
+      }
+
       this.$emit("form-submitted", this.channelId, this.format, this.pubAfter, this.pubBefore);
       this.channelId = "";
       this.format = "";
