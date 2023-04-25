@@ -112,12 +112,16 @@ Create a trigger in Monday that will kick off the process to run a report that w
 * Added date filtering
 * Added back button
 
+### 4.25.23
+* Added download button
+* Added warning for leaving the page without saving
+* Worked on some of the inconsistency problems (Aggie Radio, Men's Volleyball)
+  * Currently trying to remove video with a duration of 0 sec from the data
+
 
 ## TODO
 * Table formatting
 * Video on profile
-* Save option - https://stackoverflow.com/questions/26219180/download-current-html-file?
-  * Leaving page warning
 * Stopped at 50 problem :/
 
 
@@ -128,7 +132,9 @@ Dependencies:
 
 Vue
 * https://developer.mozilla.org/en-US/docs/Learn/Tools_and_testing/Client-side_JavaScript_frameworks/Vue_getting_started
-* 
+
+HTML
+* Download current page: https://stackoverflow.com/questions/26219180/download-current-html-file
 
 
 

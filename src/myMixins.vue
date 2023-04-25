@@ -1,6 +1,7 @@
 <script>
 /* eslint-disable */
 const converter = require("./assets/dur-iso");
+const VIDEO_FLEX = 5;
 
 module.exports = {
   // add here all the methods, props… to share
@@ -23,7 +24,7 @@ module.exports = {
         var dayBef = parseInt(pubBefore.substring(8));
       }
 
-      let resultsObj = {numVid: 0, numCap: 0, totSec: 0, secCap: 0, vidInfo: []}
+      let resultsObj = {numVid: 0, name: "", numCap: 0, totSec: 0, secCap: 0, vidInfo: []}
 
       const API_KEY = process.env.VUE_APP_YOUTUBE_API;
 
@@ -31,16 +32,19 @@ module.exports = {
           "key=" + API_KEY +
           "&id=" + channelId + "&part=snippet%2CcontentDetails%2Cstatistics";
 
+      let indicesToDelete = [];
+
       try {
         return fetch(url)
             .then( response => response.json() )
             .then( json => {
               resultsObj.numVid = json.items[0].statistics.videoCount;
+              resultsObj.name = json.items[0].snippet.title;
               let playlistId = json.items[0].contentDetails.relatedPlaylists.uploads;
 
               //Getting the playlist item info
               url = "https://youtube.googleapis.com/youtube/v3/playlistItems?playlistId=" + playlistId + "&key=" +
-                  API_KEY + "&maxResults=" + resultsObj.numVid + "&part=snippet%2CcontentDetails%2Cstatus";
+                  API_KEY + "&maxResults=" + resultsObj.numVid + VIDEO_FLEX + "&part=snippet%2CcontentDetails%2Cstatus";
               return fetch(url);
             })
             .then( response => response.json() )
@@ -52,6 +56,7 @@ module.exports = {
 
                 let id = json.items[i].snippet.resourceId.videoId;
                 let name = json.items[i].snippet.title;
+                console.log(name);
                 let dateUploaded = json.items[i].snippet.publishedAt;
 
                 //date filtering:
@@ -104,13 +109,18 @@ module.exports = {
 
                       let durISO = json.items[0].contentDetails.duration;
                       let formatted = converter.convertYouTubeDuration(durISO);
-                      console.log(formatted);
+                      //console.log(formatted);
 
                       let info = {title: json.items[0].snippet.title,
                         url: "https://www.youtube.com/watch?v=" + json.items[0].id,
                         date: json.items[0].snippet.publishedAt.substring(0, json.items[0].snippet.publishedAt.indexOf("T")),
                         dur: formatted, rawDur: durISO,
                         views: json.items[0].statistics.viewCount, profile: "Yes"};
+
+                      if (info.views === "46") {
+                        console.log("Deleting video " + resultsObj.vidInfo.length);
+                        return "nope";
+                      }
 
                       //resultsObj.totSec += converter.convertToSecond(durISO);
 
@@ -127,8 +137,14 @@ module.exports = {
                 );
 
               }
+              /*console.log(resultsObj.vidInfo);
+              console.log(indicesToDelete);
+              for (let i = 0; i < indicesToDelete.length; i++) {
+                this.vidInfo.splice(i, 1);
+              }
+              console.log(resultsObj.vidInfo);*/
               return resultsObj;
-                })
+            })
 
 
       } catch (error) {
