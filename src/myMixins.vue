@@ -1,7 +1,6 @@
 <script>
 /* eslint-disable */
 const converter = require("./assets/dur-iso");
-const VIDEO_FLEX = 5;
 
 module.exports = {
   // add here all the methods, props… to share
@@ -31,7 +30,6 @@ module.exports = {
       let url = "https://youtube.googleapis.com/youtube/v3/channels?" +
           "key=" + API_KEY +
           "&id=" + channelId + "&part=snippet%2CcontentDetails%2Cstatistics";
-
       let indicesToDelete = [];
 
       try {
@@ -44,7 +42,9 @@ module.exports = {
 
               //Getting the playlist item info
               url = "https://youtube.googleapis.com/youtube/v3/playlistItems?playlistId=" + playlistId + "&key=" +
-                  API_KEY + "&maxResults=" + resultsObj.numVid + VIDEO_FLEX + "&part=snippet%2CcontentDetails%2Cstatus";
+                  API_KEY + "&maxResults=50&part=snippet%2CcontentDetails%2Cstatus";
+
+              console.log(url);
               return fetch(url);
             })
             .then( response => response.json() )
@@ -100,7 +100,7 @@ module.exports = {
                   }
                 }
 
-                url = "https://www.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails%2Cstatistics&" +
+                url = "https://www.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails%2CliveStreamingDetails%2Cstatistics&" +
                     "id=" + id + "&key=" + API_KEY;
 
                 resultsObj.vidInfo.push(fetch(url)
@@ -115,19 +115,21 @@ module.exports = {
                         url: "https://www.youtube.com/watch?v=" + json.items[0].id,
                         date: json.items[0].snippet.publishedAt.substring(0, json.items[0].snippet.publishedAt.indexOf("T")),
                         dur: formatted, rawDur: durISO,
-                        views: json.items[0].statistics.viewCount, profile: "Yes"};
+                        views: json.items[0].statistics.viewCount, profile: "No"};
 
-                      if (info.views === "46") {
-                        console.log("Deleting video " + resultsObj.vidInfo.length);
-                        return "nope";
+                      if (json.items[0].hasOwnProperty('liveStreamingDetails')) {
+                        console.log("Found a live stream");
+                        info.profile = "Yes";
                       }
 
-                      //resultsObj.totSec += converter.convertToSecond(durISO);
+                      if (converter.convertToSecond(info.rawDur) === 0 && info.views === "0") {
+                        console.log("Deleting video " + info.title);
+                        return "nope";
+                      }
 
                       if (json.items[0].contentDetails.caption) {
                         info.cap = "Yes";
                         resultsObj.numCap += 1;
-                        //resultsObj.secCap += converter.convertToSecond(durISO);
                       } else {
                         info.cap = "No";
                       }
@@ -137,12 +139,6 @@ module.exports = {
                 );
 
               }
-              /*console.log(resultsObj.vidInfo);
-              console.log(indicesToDelete);
-              for (let i = 0; i < indicesToDelete.length; i++) {
-                this.vidInfo.splice(i, 1);
-              }
-              console.log(resultsObj.vidInfo);*/
               return resultsObj;
             })
 

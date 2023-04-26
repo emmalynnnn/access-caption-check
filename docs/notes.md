@@ -118,11 +118,15 @@ Create a trigger in Monday that will kick off the process to run a report that w
 * Worked on some of the inconsistency problems (Aggie Radio, Men's Volleyball)
   * Currently trying to remove video with a duration of 0 sec from the data
 
+### 4.26.23
+* Fixed picking up "nonexistent" videos problem
+* Added check if was live stream
 
 ## TODO
 * Table formatting
-* Video on profile
+* Testing at scale
 * Stopped at 50 problem :/
+* Testing and exception handling
 
 
 Dependencies:
@@ -135,6 +139,9 @@ Vue
 
 HTML
 * Download current page: https://stackoverflow.com/questions/26219180/download-current-html-file
+
+YouTube
+* Pagination: https://stackoverflow.com/questions/49693727/youtube-api-playlist-video-restricted-to-50-how-do-i-fetch-more
 
 
 

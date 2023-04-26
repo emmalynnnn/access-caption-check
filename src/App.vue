@@ -31,19 +31,19 @@
             <th scope="col">Duration</th>
             <th scope="col">Captioned</th>
             <th scope="col">Views</th>
-            <th scope="col">Listed on Profile?</th>
+            <th scope="col">Live Stream?</th>
           </tr>
           </thead>
 
           <tbody>
 
-          <tr v-for="vid in vidInfo" :key="vid.url">
-            <th scope="row"><a :href="vid.url">{{vid.title}}</a></th>
-            <td>{{vid.date}}</td>
-            <td>{{vid.dur}}</td>
-            <td :class="vid.cap">{{vid.cap}}</td>
-            <td class="data">{{vid.views}}</td>
-            <td :class="vid.profile">{{vid.profile}}</td>
+          <tr v-for="vid in displayVids" :key="vid.url">
+              <th scope="row"><a :href="vid.url">{{vid.title}}</a></th>
+              <td>{{vid.date}}</td>
+              <td>{{vid.dur}}</td>
+              <td :class="vid.cap">{{vid.cap}}</td>
+              <td class="data">{{vid.views}}</td>
+              <td :class="vid.profile">{{vid.profile}}</td>
           </tr>
 
           </tbody>
@@ -142,7 +142,7 @@ export default {
       //console.log(channelId, format, pubAfter, pubBefore);
 
       let emptyInfo = {title: "", url: "",
-        date: "", dur: "", cap: "", views: 0, profile: ""};
+        date: "", dur: "", cap: "", views: "", profile: ""};
       //let ourVidInfo = [];
 
       this.channelId = channelId;
@@ -163,18 +163,19 @@ export default {
             let sumInfo = 0;
 
             for (let i = 0; i < results.vidInfo.length; i++) {
-              console.log(results.vidInfo[i]);
-              if (results.vidInfo[i] === "nope") {
-                console.log("Throwing this one out");
-                this.numVid--;
-                continue;
-              }
+              //console.log(results.vidInfo[i]);
 
+              let index = this.vidInfo.length;
               this.vidInfo.push(emptyInfo);
 
               var globalVidInfoPls = this.vidInfo;
               sumInfo = results.vidInfo[i]
                   .then(function(theVal) {
+
+                    if (theVal === "nope") {
+                      return [0, 0, 0];
+                    }
+
                     globalVidInfoPls[i] = theVal;
                     let durSec = converter.convertToSecond(theVal.rawDur);
                     let isCap = 0;
@@ -236,6 +237,15 @@ export default {
     },
     downloadName() {
       return "ytca-report-" + this.channelId + ".html";
+    },
+    displayVids() {
+      let toReturn = [];
+      for (let i = 0; i < this.vidInfo.length; i++) {
+        if (this.vidInfo[i].title) {
+          toReturn.push(this.vidInfo[i]);
+        }
+      }
+      return toReturn;
     }
   }
 
