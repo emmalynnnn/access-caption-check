@@ -73,9 +73,7 @@
 import "./assets/app.css";
 const converter = require("./assets/dur-iso");
 
-//import ToDoItem from "./components/ToDoItem.vue";
 import ChannelInfoForm from "./components/ChannelInfoForm";
-import uniqueId from "lodash.uniqueid";
 
 export default {
   name: 'App',
@@ -97,6 +95,7 @@ export default {
       vidInfo: [],
       channelId: "",
       downloaded: false,
+      SERVER_URL: "http://localhost:8000/",
     };
   },
 
@@ -147,7 +146,59 @@ export default {
 
       this.channelId = channelId;
 
-      this.auditChannel(channelId, format, pubAfter, pubBefore)
+      let inputData = {channelId: channelId, format: format, pubAfter: pubAfter, pubBefore: pubBefore}
+
+      this.postData(this.SERVER_URL, inputData).then((data) => {
+        console.log(data)
+        let results = data.result;
+        console.log(results);
+        console.log("We have gotten the results back!!");
+
+        this.noData = false;
+
+        this.numVid = results.numVid;
+        this.name = results.name;
+        this.numCap = results.numCap;
+        this.totSec = 0;
+        this.secCap = results.secCap;
+
+        let sumInfo = 0;
+
+        for (let i = 0; i < results.vidInfo.length; i++) {
+          //console.log(results.vidInfo[i]);
+
+          let index = this.vidInfo.length;
+          this.vidInfo.push(emptyInfo);
+
+          var globalVidInfoPls = this.vidInfo;
+          sumInfo = results.vidInfo[i]
+              .then(function (theVal) {
+
+                if (theVal === "nope") {
+                  return [0, 0, 0];
+                }
+
+                globalVidInfoPls[i] = theVal;
+                let durSec = converter.convertToSecond(theVal.rawDur);
+                let isCap = 0;
+                let secCap = 0;
+                if (theVal.cap) {
+                  isCap = 1;
+                  secCap = durSec;
+                }
+
+                return [durSec, isCap, secCap];
+              })
+              .then(value => {
+                this.totSec += value[0];
+                this.numCap += value[1];
+                this.secCap += value[2];
+              });
+        }
+      });
+
+
+      /*this.auditChannel(channelId, format, pubAfter, pubBefore)
           .then (results => {
             //console.log("We have gotten the results back!!");
             console.log(results);
@@ -194,33 +245,33 @@ export default {
                   });
             }
 
-            //this.checkEmpty();
+          });
+      */
+    },
+    postData(url, data, contentType="application/json") {
+      return fetch(url, {
+        method: "POST",
+        /*mode: "no-cors",*/
+        cache: "no-cache",
+        credentials: "same-origin",
+        connection: "keep-alive",
+        headers: {
+          Accept: 'application.json',
+          "Content-Type": contentType,
+        },
+        body: JSON.stringify(data)
+      })
+          .then(res => {
+            return res.json();
+          })
+          .then((obj) => {
+            return obj;
+          })
+          .catch(err => {
+            console.log(err);
           });
     },
 
-   /* checkEmpty() {
-      console.log("Hello!!!")
-      let indicesToRemove = [];
-      for (let i = 0; i < this.vidInfo.length; i++) {
-        let sec = converter.convertToSecond(this.vidInfo[i].rawDur);
-        //console.log(this.vidInfo[i].title + " is this long: " + sec);
-        if (sec <= 0) {
-          console.log(this.vidInfo[i].title + " is an empty video");
-          indicesToRemove.push(i);
-
-          this.totSec -= sec;
-          if (this.vidInfo[i].cap) {
-            this.numCap -= 1;
-            this.secCap -= sec;
-          }
-        }
-      }
-      for (let i = 0; i < indicesToRemove.length; i++) {
-        this.vidInfo.splice(i, 1);
-      }
-
-      console.log(this.vidInfo);
-    }*/
   },
 
   computed: {
@@ -228,7 +279,6 @@ export default {
       if (this.numCap === 0) {
         return 0;
       }
-      //console.log("We have " + this.numVid + " videos and this many are captioned: " + this.numCap);
       return Math.round((this.numCap / this.numVid) * 100);
     },
     currDate() {

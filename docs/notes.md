@@ -121,12 +121,18 @@ Create a trigger in Monday that will kick off the process to run a report that w
 ### 4.26.23
 * Fixed picking up "nonexistent" videos problem
 * Added check if was live stream
+* Phase 1 complete
+
+### 5.2.23
+* Starting phase 1.5 - converting backend to API
+* 
 
 ## TODO
 * Table formatting
 * Testing at scale
 * Stopped at 50 problem :/
 * Testing and exception handling
+* Convert backend to use axios
 
 
 Dependencies:
