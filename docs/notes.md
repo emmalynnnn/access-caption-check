@@ -128,17 +128,19 @@ Create a trigger in Monday that will kick off the process to run a report that w
 
 ### 5.4.23
 * Finished converting backend to API
+* Working on stopping at 50 pagination problem
+* Converted backend to use axios
 
 ## TODO
 * Table formatting
 * Testing at scale
 * Stopped at 50 problem :/
 * Testing and exception handling
-* Convert backend to use axios
 
 
 Dependencies:
 * Vue
+* Other stuff that I don't remember off the top of my head cause I've been bad about updating this list
 
 ## Sources/References
 

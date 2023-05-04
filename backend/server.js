@@ -34,10 +34,14 @@ app.post("/", function(req, res) {
 app.post("/get-vid-info", function(req, res) {
     console.log("About to print the vid id param")
     console.log(req.body);
+
     getVidInfo(req.body.id)
         .then( results => {
             console.log(results);
             return res.status(200).json({result: results});
+        }).catch( err => {
+            console.log(err);
+            return res.status(500).json({result: "Error: channel audit failed"});
         });
 })
 
@@ -106,18 +110,26 @@ async function auditChannel(channelId, format, pubAfter, pubBefore) {
         return axios.get(url)
             .then( response => {
                 let json = response.data;
+
                 resultsObj.numVid = json.items[0].statistics.videoCount;
                 resultsObj.name = json.items[0].snippet.title;
                 let playlistId = json.items[0].contentDetails.relatedPlaylists.uploads;
 
+                //TODO: pagination
+                let pagination = false;
+                if (resultsObj.numVid > 50) {
+                    pagination = true;
+                }
+
                 //Getting the playlist item info
-                url = "https://youtube.googleapis.com/youtube/v3/playlistItems?playlistId=" + playlistId + "&key=" +
+                //url = "https://youtube.googleapis.com/youtube/v3/playlistItems?playlistId=" + playlistId + "&key=" +
                     YOUTUBE_API_KEY + "&maxResults=50&part=snippet%2CcontentDetails%2Cstatus";
 
                 //console.log(url);
-                return axios.get(url);
-            })
-            .then( response => {
+                //return axios.get(url);})
+                return getVidIds(pagination, resultsObj, playlistId, pubAfter, pubBefore, yearAft, monthAft, dayAft,
+                    yearBef, monthBef, dayBef);})
+            /*.then( response => {
                 let json = response.data;
 
                 for (let i = 0; i < json.items.length; i++) {
@@ -169,14 +181,84 @@ async function auditChannel(channelId, format, pubAfter, pubBefore) {
                     }
 
                     resultsObj.vidIds.push(id);
+
+
                 }
                 return resultsObj;
-            })
+            })*/
 
     } catch (error) {
         console.log(error.message);
         return "";
     }
+
+}
+
+async function getVidIds(pagination, resultsObj, playlistId, pubAfter, pubBefore, yearAft, monthAft, dayAft,
+                         yearBef, monthBef, dayBef) {
+    let url = "https://youtube.googleapis.com/youtube/v3/playlistItems?playlistId=" + playlistId + "&key=" +
+        YOUTUBE_API_KEY + "&maxResults=50&part=snippet%2CcontentDetails%2Cstatus";
+    return axios.get(url)
+        .then( response => {
+            let json = response.data;
+
+            for (let i = 0; i < json.items.length; i++) {
+
+                let id = json.items[i].snippet.resourceId.videoId;
+                let name = json.items[i].snippet.title;
+                console.log(name);
+                let dateUploaded = json.items[i].snippet.publishedAt;
+
+                //date filtering:
+                if (pubAfter) {
+                    if (parseInt(dateUploaded.substring(0, 4)) < yearAft) {
+                        console.log(name + " is before the year range, moving on.")
+                        resultsObj.numVid--;
+                        continue;
+                    } else if (parseInt(dateUploaded.substring(0, 4)) === yearAft) {
+                        if (parseInt(dateUploaded.substring(5, 7)) < monthAft) {
+                            console.log(name + " is before the month range, moving on.")
+                            resultsObj.numVid--;
+                            continue;
+                        } else if (parseInt(dateUploaded.substring(5, 7)) === monthAft) {
+                            if (parseInt(dateUploaded.substring(8, 10)) < dayAft) {
+                                console.log(name + " is before the day range, moving on.")
+                                resultsObj.numVid--;
+                                continue;
+                            }
+                        }
+                    }
+                }
+
+                if (pubBefore) {
+                    if (parseInt(dateUploaded.substring(0, 4)) > yearBef) {
+                        console.log(name + " is after the year range, moving on.")
+                        resultsObj.numVid--;
+                        continue;
+                    } else if (parseInt(dateUploaded.substring(0, 4)) === yearBef) {
+                        if (parseInt(dateUploaded.substring(5, 7)) > monthBef) {
+                            console.log(name + " is after the date month because " + dateUploaded.substring(5, 7) + " is greater than " + monthBef);
+                            resultsObj.numVid--;
+                            continue;
+                        } else if (parseInt(dateUploaded.substring(5, 7)) === monthBef) {
+                            if (parseInt(dateUploaded.substring(8, 10)) > dayBef) {
+                                console.log(name + " is after the day range, moving on.")
+                                resultsObj.numVid--;
+                                continue;
+                            }
+                        }
+                    }
+                }
+
+                resultsObj.vidIds.push(id);
+            }
+
+            if (!pagination) {
+                return resultsObj;
+            } else {
+                //TODO: recursively call function again to get the next page (https://developers.google.com/youtube/v3/guides/implementation/pagination)
+            }
+        })
 
 }
 
