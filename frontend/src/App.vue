@@ -149,10 +149,9 @@ export default {
       let inputData = {channelId: channelId, format: format, pubAfter: pubAfter, pubBefore: pubBefore}
 
       this.postData(this.SERVER_URL, inputData).then((data) => {
-        console.log(data)
         let results = data.result;
-        console.log(results);
-        console.log("We have gotten the results back!!");
+        //console.log(results);
+        //console.log("We have gotten the results back!!");
 
         this.noData = false;
 
@@ -164,89 +163,27 @@ export default {
 
         let sumInfo = 0;
 
-        for (let i = 0; i < results.vidInfo.length; i++) {
-          //console.log(results.vidInfo[i]);
+        for (let i = 0; i < results.vidIds.length; i++) {
+          //console.log(results.vidIds[i]);
 
-          let index = this.vidInfo.length;
-          this.vidInfo.push(emptyInfo);
+          this.postData(this.SERVER_URL + "get-vid-info/", {id: results.vidIds[i]})
+              .then (result => {
+                let vidInfo = result.result;
 
-          var globalVidInfoPls = this.vidInfo;
-          sumInfo = results.vidInfo[i]
-              .then(function (theVal) {
+                this.vidInfo.push(vidInfo);
 
-                if (theVal === "nope") {
-                  return [0, 0, 0];
+                let vidSec = converter.convertToSecond(vidInfo.rawDur);
+
+                this.totSec += vidSec;
+
+                if (vidInfo.cap === "Yes") {
+                  this.numCap++;
+                  this.secCap += vidSec;
                 }
-
-                globalVidInfoPls[i] = theVal;
-                let durSec = converter.convertToSecond(theVal.rawDur);
-                let isCap = 0;
-                let secCap = 0;
-                if (theVal.cap) {
-                  isCap = 1;
-                  secCap = durSec;
-                }
-
-                return [durSec, isCap, secCap];
               })
-              .then(value => {
-                this.totSec += value[0];
-                this.numCap += value[1];
-                this.secCap += value[2];
-              });
         }
       });
 
-
-      /*this.auditChannel(channelId, format, pubAfter, pubBefore)
-          .then (results => {
-            //console.log("We have gotten the results back!!");
-            console.log(results);
-
-            this.noData = false;
-
-            this.numVid = results.numVid;
-            this.name = results.name;
-            this.numCap = results.numCap;
-            this.totSec = 0;
-            this.secCap = results.secCap;
-
-            let sumInfo = 0;
-
-            for (let i = 0; i < results.vidInfo.length; i++) {
-              //console.log(results.vidInfo[i]);
-
-              let index = this.vidInfo.length;
-              this.vidInfo.push(emptyInfo);
-
-              var globalVidInfoPls = this.vidInfo;
-              sumInfo = results.vidInfo[i]
-                  .then(function(theVal) {
-
-                    if (theVal === "nope") {
-                      return [0, 0, 0];
-                    }
-
-                    globalVidInfoPls[i] = theVal;
-                    let durSec = converter.convertToSecond(theVal.rawDur);
-                    let isCap = 0;
-                    let secCap = 0;
-                    if (theVal.cap) {
-                      isCap = 1;
-                      secCap = durSec;
-                    }
-
-                    return [durSec, isCap, secCap];
-                  })
-                  .then( value => {
-                    this.totSec += value[0];
-                    this.numCap += value[1];
-                    this.secCap += value[2];
-                  });
-            }
-
-          });
-      */
     },
     postData(url, data, contentType="application/json") {
       return fetch(url, {

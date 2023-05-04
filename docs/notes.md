@@ -125,7 +125,9 @@ Create a trigger in Monday that will kick off the process to run a report that w
 
 ### 5.2.23
 * Starting phase 1.5 - converting backend to API
-* 
+
+### 5.4.23
+* Finished converting backend to API
 
 ## TODO
 * Table formatting
