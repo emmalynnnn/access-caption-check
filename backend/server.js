@@ -14,6 +14,7 @@ app.use(cors({
 }));
 
 const YOUTUBE_API_KEY = process.env.YOUTUBE_API;
+const VIDS_ON_PAGE = 50;
 
 app.get('/', (req, res) => {
     res.send("Heyyyyy friends");
@@ -72,12 +73,11 @@ async function getVidInfo(id) {
 
                 if (json.data.items[0].contentDetails.caption) {
                     info.cap = "Yes";
-                    //resultsObj.numCap += 1;
                 } else {
                     info.cap = "No";
                 }
 
-                console.log("info: " + JSON.stringify(info));
+                //console.log("info: " + JSON.stringify(info));
                 return info;
             });
 }
@@ -104,7 +104,6 @@ async function auditChannel(channelId, format, pubAfter, pubBefore) {
     let url = "https://youtube.googleapis.com/youtube/v3/channels?" +
         "key=" + YOUTUBE_API_KEY +
         "&id=" + channelId + "&part=snippet%2CcontentDetails%2Cstatistics";
-    let indicesToDelete = [];
 
     try {
         return axios.get(url)
@@ -115,77 +114,13 @@ async function auditChannel(channelId, format, pubAfter, pubBefore) {
                 resultsObj.name = json.items[0].snippet.title;
                 let playlistId = json.items[0].contentDetails.relatedPlaylists.uploads;
 
-                //TODO: pagination
                 let pagination = false;
-                if (resultsObj.numVid > 50) {
+                if (resultsObj.numVid > VIDS_ON_PAGE) {
                     pagination = true;
                 }
 
-                //Getting the playlist item info
-                //url = "https://youtube.googleapis.com/youtube/v3/playlistItems?playlistId=" + playlistId + "&key=" +
-                    YOUTUBE_API_KEY + "&maxResults=50&part=snippet%2CcontentDetails%2Cstatus";
-
-                //console.log(url);
-                //return axios.get(url);})
                 return getVidIds(pagination, resultsObj, playlistId, pubAfter, pubBefore, yearAft, monthAft, dayAft,
-                    yearBef, monthBef, dayBef);})
-            /*.then( response => {
-                let json = response.data;
-
-                for (let i = 0; i < json.items.length; i++) {
-
-                    let id = json.items[i].snippet.resourceId.videoId;
-                    let name = json.items[i].snippet.title;
-                    console.log(name);
-                    let dateUploaded = json.items[i].snippet.publishedAt;
-
-                    //date filtering:
-                    if (pubAfter) {
-                        if (parseInt(dateUploaded.substring(0, 4)) < yearAft) {
-                            console.log(name + " is before the year range, moving on.")
-                            resultsObj.numVid--;
-                            continue;
-                        } else if (parseInt(dateUploaded.substring(0, 4)) === yearAft) {
-                            if (parseInt(dateUploaded.substring(5, 7)) < monthAft) {
-                                console.log(name + " is before the month range, moving on.")
-                                resultsObj.numVid--;
-                                continue;
-                            } else if (parseInt(dateUploaded.substring(5, 7)) === monthAft) {
-                                if (parseInt(dateUploaded.substring(8, 10)) < dayAft) {
-                                    console.log(name + " is before the day range, moving on.")
-                                    resultsObj.numVid--;
-                                    continue;
-                                }
-                            }
-                        }
-                    }
-
-                    if (pubBefore) {
-                        if (parseInt(dateUploaded.substring(0, 4)) > yearBef) {
-                            console.log(name + " is after the year range, moving on.")
-                            resultsObj.numVid--;
-                            continue;
-                        } else if (parseInt(dateUploaded.substring(0, 4)) === yearBef) {
-                            if (parseInt(dateUploaded.substring(5, 7)) > monthBef) {
-                                console.log(name + " is after the date month because " + dateUploaded.substring(5, 7) + " is greater than " + monthBef);
-                                resultsObj.numVid--;
-                                continue;
-                            } else if (parseInt(dateUploaded.substring(5, 7)) === monthBef) {
-                                if (parseInt(dateUploaded.substring(8, 10)) > dayBef) {
-                                    console.log(name + " is after the day range, moving on.")
-                                    resultsObj.numVid--;
-                                    continue;
-                                }
-                            }
-                        }
-                    }
-
-                    resultsObj.vidIds.push(id);
-
-
-                }
-                return resultsObj;
-            })*/
+                    yearBef, monthBef, dayBef, "");})
 
     } catch (error) {
         console.log(error.message);
@@ -195,9 +130,14 @@ async function auditChannel(channelId, format, pubAfter, pubBefore) {
 }
 
 async function getVidIds(pagination, resultsObj, playlistId, pubAfter, pubBefore, yearAft, monthAft, dayAft,
-                         yearBef, monthBef, dayBef) {
+                         yearBef, monthBef, dayBef, nextPageToken) {
     let url = "https://youtube.googleapis.com/youtube/v3/playlistItems?playlistId=" + playlistId + "&key=" +
         YOUTUBE_API_KEY + "&maxResults=50&part=snippet%2CcontentDetails%2Cstatus";
+
+    if (nextPageToken) {
+        url += ("&pageToken=" + nextPageToken)
+    }
+
     return axios.get(url)
         .then( response => {
             let json = response.data;
@@ -254,9 +194,16 @@ async function getVidIds(pagination, resultsObj, playlistId, pubAfter, pubBefore
             }
 
             if (!pagination) {
+                console.log("Andddd we're done");
                 return resultsObj;
             } else {
-                //TODO: recursively call function again to get the next page (https://developers.google.com/youtube/v3/guides/implementation/pagination)
+                let newNextPageToken = json.nextPageToken;
+                if (newNextPageToken === undefined) {
+                    console.log("Andddd we're done");
+                    return resultsObj;
+                }
+                return getVidIds(pagination, resultsObj, playlistId, pubAfter, pubBefore, yearAft, monthAft, dayAft,
+                    yearBef, monthBef, dayBef, newNextPageToken);
             }
         })
 

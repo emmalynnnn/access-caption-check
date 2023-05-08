@@ -16,6 +16,7 @@
         <p><strong>{{currDate}}</strong></p>
         <h2>{{name}}</h2>
         <p>{{this.channelId}}</p>
+
         <ul>
           <li>Number of videos: <strong>{{numVid}}</strong></li>
           <li>Number captioned: <strong>{{numCap}} ({{percentCap}}%)</strong></li>
@@ -50,16 +51,18 @@
 
         </table>
       </div>
-
-      <br>
-      <div class="button-box" id="backBox">
-        <a @click="goBack" class="btn btn__primary btn__lg">Back</a>
+      <div>
+        <br>
+        <div class="button-box" id="backBox">
+          <a @click="goBack" class="btn btn__primary btn__lg">Back</a>
+        </div>
+        <br>
+        <div class="button-box" id="downloadBox">
+          <a @click="download" id="downloadLink"
+             href="#" :download="downloadName" class="btn btn__primary btn__lg">Download</a>
+        </div>
       </div>
       <br>
-      <div class="button-box" id="downloadBox">
-        <a @click="download" id="downloadLink"
-           href="#" :download="downloadName" class="btn btn__primary btn__lg">Download</a>
-      </div>
 
     </div>
 

@@ -131,11 +131,21 @@ Create a trigger in Monday that will kick off the process to run a report that w
 * Working on stopping at 50 pagination problem
 * Converted backend to use axios
 
+### 5.5.23
+* Fixed pagination problem
+* Ran into an issue with Chrome - POST (server url) net::ERR_INSUFFICIENT_RESOURCES
+  * Wasn't a problem with 700ish videos, was with 1400ish videos
+
+### 5.8.23
+* Started working on phase 2
+* 
+
 ## TODO
 * Table formatting
-* Testing at scale
-* Stopped at 50 problem :/
+* Bulk testing
 * Testing and exception handling
+* Chrome issue begins around 1200ish videos
+* Quota limit issue
 
 
 Dependencies:
