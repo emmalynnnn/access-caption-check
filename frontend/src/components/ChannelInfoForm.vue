@@ -24,9 +24,18 @@
       <label for="format-input" class="label__lg">
         <span style="color: brown">*</span>Format:
       </label>
-      <select name="format-input" class="form-select" v-model.lazy.trim="format">
+      <select name="format-input" class="form-select" v-model.lazy.trim="format"
+              @change="showField($event)">
         <option value="HTML">HTML</option>
+        <option value="Sheets">Google Sheets</option>
       </select>
+    </div>
+
+    <div class="a-box" id="div1" v-if="showFolderField">
+      <span style="color: brown">*</span>
+      <label for="folder-name-input" class="label__lg">Folder Name: </label>
+      <input type="text" id="folder-name-input" name="folder-name" autocomplete="off"
+             v-model.lazy.trim="foldName" class="input__lg" />
     </div>
 
 
@@ -70,9 +79,22 @@
 export default {
   emits: ["form-submitted"],
   methods: {
+    showField(event) {
+      let name = event.target.value;
+      if (name === 'Sheets') {
+        this.showFolderField = true;
+      } else {
+        this.showFolderField = false;
+      }
+    },
     onSubmit() {
       if (this.channelId === "" || this.format === "") {
         //These fields are required!!
+        return;
+      }
+
+      if (this.showFolderField && this.foldName === "") {
+        //This field is required!!
         return;
       }
 
@@ -114,11 +136,13 @@ export default {
         }
       }
 
-      this.$emit("form-submitted", this.channelId, this.format, this.pubAfter, this.pubBefore);
+      this.$emit("form-submitted", this.channelId, this.format, this.pubAfter, this.pubBefore, this.foldName);
       this.channelId = "";
       this.format = "";
       this.pubAfter = "";
       this.pubBefore = "";
+      this.foldName = "";
+      this.showFolderField = false;
     },
   },
 
@@ -128,6 +152,8 @@ export default {
       format: "",
       pubAfter: "",
       pubBefore: "",
+      foldName: "",
+      showFolderField: false,
     }
   }
 };

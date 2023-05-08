@@ -1,5 +1,8 @@
 require('dotenv').config();
 
+const {google} = require('googleapis');
+let privatekey = require("./service_account.json");
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const converter = require("../frontend/src/assets/dur-iso");
@@ -22,7 +25,8 @@ app.get('/', (req, res) => {
 
 app.post("/", function(req, res) {
     console.log(req.body);
-    auditChannel(req.body.channelId, req.body.format, req.body.pubAfter, req.body.pubAfter)
+
+    auditChannel(req.body.channelId, req.body.format, req.body.pubAfter, req.body.pubAfter, req.body.foldName)
         .then( results => {
             console.log(results);
             return res.status(200).json({result: results});
@@ -33,10 +37,10 @@ app.post("/", function(req, res) {
 })
 
 app.post("/get-vid-info", function(req, res) {
-    console.log("About to print the vid id param")
+    console.log("About to print the vid params")
     console.log(req.body);
 
-    getVidInfo(req.body.id)
+    getVidInfo(req.body.id, req.body.foldName)
         .then( results => {
             console.log(results);
             return res.status(200).json({result: results});
@@ -46,7 +50,7 @@ app.post("/get-vid-info", function(req, res) {
         });
 })
 
-async function getVidInfo(id) {
+async function getVidInfo(id, foldName) {
     let url = "https://www.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails%2CliveStreamingDetails%2Cstatistics&" +
         "id=" + id + "&key=" + YOUTUBE_API_KEY;
     return axios.get(url)
@@ -77,15 +81,19 @@ async function getVidInfo(id) {
                     info.cap = "No";
                 }
 
+                if (foldName) {
+                    createRow(foldName, JSON.stringify(info))
+                }
+
                 //console.log("info: " + JSON.stringify(info));
                 return info;
             });
 }
 
-async function auditChannel(channelId, format, pubAfter, pubBefore) {
+async function auditChannel(channelId, format, pubAfter, pubBefore, foldName) {
 
     console.log("Auditing " + channelId);
-    console.log(channelId, format, pubAfter, pubBefore);
+    console.log(channelId, format, pubAfter, pubBefore, foldName);
 
     if (pubAfter) {
         var yearAft = parseInt(pubAfter.substring(0, 4));
@@ -118,6 +126,8 @@ async function auditChannel(channelId, format, pubAfter, pubBefore) {
                 if (resultsObj.numVid > VIDS_ON_PAGE) {
                     pagination = true;
                 }
+
+                createSheet(foldName, resultsObj.name);
 
                 return getVidIds(pagination, resultsObj, playlistId, pubAfter, pubBefore, yearAft, monthAft, dayAft,
                     yearBef, monthBef, dayBef, "");})
@@ -206,6 +216,111 @@ async function getVidIds(pagination, resultsObj, playlistId, pubAfter, pubBefore
                     yearBef, monthBef, dayBef, newNextPageToken);
             }
         })
+
+}
+
+async function createSheet(foldName, name) {
+    console.log("Creating the sheet for " + name + " in " + foldName);
+
+    let jwtClient = authorizeGoogle();
+
+    const service = google.drive({version: 'v3', jwtClient});
+
+    let folderId = "13h-35-rhh0Rl9lGn7F9eYYttPXvAulyk";
+
+
+    const fileMetadata = {
+        name: 'Test file',
+        parents: [folderId],
+    };
+    const media = {
+        mimeType: 'application/vnd.google-apps.spreadsheet',
+        /*body: fs.createReadStream('files/photo.jpg'),*/
+    };
+
+    service.files.create({
+        auth: jwtClient,
+        resource: fileMetadata,
+        media: media,
+        fields: 'id'
+    }, function (err, response) {
+        if (err) {
+            console.log('The API returned an error: ' + err);
+        } else {
+            console.log('File Id:', response.data.id);
+            return response.data.id;
+        }
+    });
+
+
+    /*
+    READING:
+    let spreadsheetId = '1-YV9BR1TVWMeheoMdNoHSVSEnfOK1Qge0bMVCT0SL_8';
+    let sheetName = 'Test!A1:B14'
+    let sheets = google.sheets('v4');
+
+    sheets.spreadsheets.values.get({
+        auth: jwtClient,
+        spreadsheetId: spreadsheetId,
+        range: sheetName
+    }, function (err, response) {
+        if (err) {
+            console.log('The API returned an error: ' + err);
+        } else {
+            console.log('List from Google Sheets:');
+            console.log(response.data.values)
+        }
+    });*/
+}
+
+function authorizeGoogle() {
+    let jwtClient = new google.auth.JWT(
+        privatekey.client_email,
+        null,
+        privatekey.private_key,
+        ['https://www.googleapis.com/auth/spreadsheets',
+            'https://www.googleapis.com/auth/drive',
+            'https://www.googleapis.com/auth/drive.file',
+            'https://www.googleapis.com/auth/drive.metadata']);
+    //authenticate request
+    jwtClient.authorize(function (err, tokens) {
+        if (err) {
+            console.log(err);
+        } else {
+            console.log("Successfully connected!");
+        }
+    });
+    return jwtClient;
+}
+
+async function createRow(foldName, info) {
+    //console.log("Creating a new row with " + info);
+    let jwtClient = authorizeGoogle();
+    let sheets = google.sheets({version: 'v4', jwtClient});
+
+    //TODO: currently modifying to follow this example: https://developers.google.com/sheets/api/guides/values
+
+    let fileId = "1SkNgZZZ-LNdGogmh95yAfFWXba6CFL43";
+
+    let values = [
+        ["Cool", "wow", "fun"],
+        ["bagel", "bagel", "bagel"]
+    ];
+    const resource = {
+        values,
+    };
+
+    sheets.spreadsheets.values.update({
+        spreadsheetId: spreadsheetId,
+        range: sheetName
+    }, function (err, response) {
+        if (err) {
+            console.log('The API returned an error: ' + err);
+        } else {
+            console.log('List from Google Sheets:');
+            console.log(response.data.values)
+        }
+    });
 
 }
 

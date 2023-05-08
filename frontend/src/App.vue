@@ -140,8 +140,10 @@ export default {
       this.name = "";
     },
 
-    auditTheChannel(channelId, format, pubAfter, pubBefore) {
+    auditTheChannel(channelId, format, pubAfter, pubBefore, foldName) {
       //console.log(channelId, format, pubAfter, pubBefore);
+
+      console.log("Outputting to " + format + " " + foldName);
 
       let emptyInfo = {title: "", url: "",
         date: "", dur: "", cap: "", views: "", profile: ""};
@@ -149,7 +151,7 @@ export default {
 
       this.channelId = channelId;
 
-      let inputData = {channelId: channelId, format: format, pubAfter: pubAfter, pubBefore: pubBefore}
+      let inputData = {channelId: channelId, format: format, pubAfter: pubAfter, pubBefore: pubBefore, foldName: foldName}
 
       this.postData(this.SERVER_URL, inputData).then((data) => {
         let results = data.result;
@@ -169,7 +171,7 @@ export default {
         for (let i = 0; i < results.vidIds.length; i++) {
           //console.log(results.vidIds[i]);
 
-          this.postData(this.SERVER_URL + "get-vid-info/", {id: results.vidIds[i]})
+          this.postData(this.SERVER_URL + "get-vid-info/", {id: results.vidIds[i], foldName: foldName})
               .then (result => {
                 let vidInfo = result.result;
 

@@ -138,13 +138,13 @@ Create a trigger in Monday that will kick off the process to run a report that w
 
 ### 5.8.23
 * Started working on phase 2
-* 
+* I think I need to wait for google drive permissions to propagate through the system so I'll come back to this
+* Working on getting drive api to work
 
 ## TODO
 * Table formatting
 * Bulk testing
 * Testing and exception handling
-* Chrome issue begins around 1200ish videos
 * Quota limit issue
 
 
@@ -162,6 +162,10 @@ HTML
 
 YouTube
 * Pagination: https://stackoverflow.com/questions/49693727/youtube-api-playlist-video-restricted-to-50-how-do-i-fetch-more
+
+Google Drive/Sheets:
+* https://developers.google.com/sheets/api/guides/create 
+* https://developers.google.com/drive/api/guides/folder#create_a_file_in_a_folder
 
 
 
