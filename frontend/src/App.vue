@@ -170,6 +170,7 @@ export default {
         //console.log("The sheet id is: " + results.sheetId);
 
         if (foldName) {
+          console.log("There is a foldName so we're doing this " + foldName)
           this.postData(this.SERVER_URL + "create-sheet/", {foldName: foldName, name: this.name})
               .then ( result => {
                 console.log("The id is " + result.id);
@@ -198,6 +199,27 @@ export default {
                       })
                 }
               })
+        } else {
+          for (let i = 0; i < results.vidIds.length; i++) {
+            //console.log(results.vidIds[i]);
+
+            this.postData(this.SERVER_URL + "get-vid-info/", {id: results.vidIds[i], sheetId: "", vidNum: ""})
+                .then (result => {
+
+                  let vidInfo = result.result;
+
+                  this.vidInfo.push(vidInfo);
+
+                  let vidSec = converter.convertToSecond(vidInfo.rawDur);
+
+                  this.totSec += vidSec;
+
+                  if (vidInfo.cap === "Yes") {
+                    this.numCap++;
+                    this.secCap += vidSec;
+                  }
+                })
+          }
         }
 
       });

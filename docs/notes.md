@@ -150,7 +150,8 @@ Create a trigger in Monday that will kick off the process to run a report that w
 * Bulk testing
 * Testing and exception handling
 * Quota limit issue
-* Aggie radio problems??
+* AxiosError: read ECONNRESET??
+* Change sheets population to update all rows at once
 
 Dependencies:
 * Vue

@@ -19,6 +19,15 @@ app.use(cors({
 const YOUTUBE_API_KEY = process.env.YOUTUBE_API;
 const VIDS_ON_PAGE = 50;
 
+const FOLDER_IDS = {
+
+}
+
+const TEST_FOLDER_IDS = {
+    "Test 1": "1-zaZ8NACPMCdOKMosR-mei-TjEA77i3W",
+    "Test 2": "1CdXZn20E2jhsLpzH3oH-dpsxTpBP27Fx",
+}
+
 app.get('/', (req, res) => {
     res.send("Heyyyyy friends");
 });
@@ -37,8 +46,8 @@ app.post("/", function(req, res) {
 })
 
 app.post("/get-vid-info", function(req, res) {
-    console.log("About to print the vid params")
-    console.log(req.body);
+    //console.log("About to print the vid params")
+    //console.log(req.body);
 
     getVidInfo(req.body.id, req.body.sheetId, req.body.vidNum)
         .then( results => {
@@ -52,12 +61,13 @@ app.post("/get-vid-info", function(req, res) {
 
 app.post("/create-sheet", function (req, res) {
     console.log("Creating a sheet")
-    //TODO: get folder id from foldName
-    let folderId = "13h-35-rhh0Rl9lGn7F9eYYttPXvAulyk";
 
     let name = req.body.name;
     let foldName = req.body.foldName;
-    console.log("Creating the sheet for " + name + " in " + foldName);
+
+    //TODO: get folder id from foldName
+    //let folderId = "13h-35-rhh0Rl9lGn7F9eYYttPXvAulyk";
+    let folderId = TEST_FOLDER_IDS[foldName];
 
     if (!foldName) {
         return res.status(200).json({id: "You don't need thatttt"});
@@ -136,7 +146,7 @@ async function getVidInfo(id, sheetId, vidNum) {
 
 async function addRow(fileId, info, vidNum) {
     info = JSON.parse(info);
-    console.log("Adding a new row for " + info.title);
+    //console.log("Adding a new row for " + info.title);
 
     let jwtClient = authorizeGoogle();
     let sheets = google.sheets({version: 'v4', auth: jwtClient});
@@ -161,8 +171,8 @@ async function addRow(fileId, info, vidNum) {
         if (err) {
             console.log('The API returned an error. ' + err);
         } else {
-            console.log('Result:');
-            console.log(response.data)
+            //console.log('Result:');
+            //console.log(response.data)
         }
     });
 
@@ -313,9 +323,8 @@ async function moveSheet(id, folderId, jwtClient) {
             removeParents: previousParents,
             fields: 'id, parents',
         });
-        console.log(files.status);
-        console.log("Here is the spreadsheet id from within moveSheet: " + id);
-        id;
+        //console.log(files.status);
+        //console.log("Here is the spreadsheet id from within moveSheet: " + id);
     } catch (err) {
         console.log(err);
         //throw err;
@@ -343,8 +352,8 @@ async function addHeader(id, jwtClient) {
         if (err) {
             console.log('The API returned an error. ' + err);
         } else {
-            console.log('Result:');
-            console.log(response.data)
+            //console.log('Result:');
+            //console.log(response.data)
         }
     });
 }
@@ -431,7 +440,7 @@ async function formatSheet(id, jwtClient) {
             spreadsheetId: id,
             resource,
         });
-        console.log(`${response.data.replies.length} cells updated.`);
+        //console.log(`${response.data.replies.length} cells updated.`);
         return response;
     } catch (err) {
         console.log(err);
