@@ -143,13 +143,14 @@ Create a trigger in Monday that will kick off the process to run a report that w
 
 ### 5.8.23
 * Creating and naming the spreadsheet is working, now working on filling it in and formatting it
+* Spreadsheets filled in and formatted
 
 ## TODO
 * Table formatting
 * Bulk testing
 * Testing and exception handling
 * Quota limit issue
-
+* Aggie radio problems??
 
 Dependencies:
 * Vue

@@ -99,6 +99,7 @@ export default {
       channelId: "",
       downloaded: false,
       SERVER_URL: "http://localhost:8000/",
+      sheetId: "",
     };
   },
 
@@ -172,37 +173,33 @@ export default {
           this.postData(this.SERVER_URL + "create-sheet/", {foldName: foldName, name: this.name})
               .then ( result => {
                 console.log("The id is " + result.id);
-                return result.id
+                this.sheetId = result.id;
+                return result.id;
               })
-              .then (id => {
+              .then (sheetId => {
+                for (let i = 0; i < results.vidIds.length; i++) {
+                  //console.log(results.vidIds[i]);
 
-              })
-        }
+                  this.postData(this.SERVER_URL + "get-vid-info/", {id: results.vidIds[i], sheetId: sheetId, vidNum: i})
+                      .then (result => {
 
-        let sumInfo = 0;
+                        let vidInfo = result.result;
 
-        for (let i = 0; i < results.vidIds.length; i++) {
-          //console.log(results.vidIds[i]);
+                        this.vidInfo.push(vidInfo);
 
-          this.postData(this.SERVER_URL + "get-vid-info/", {id: results.vidIds[i], foldName: foldName})
-              .then (result => {
+                        let vidSec = converter.convertToSecond(vidInfo.rawDur);
 
-                //console.log("The sheet id is: " + results.sheetId);
+                        this.totSec += vidSec;
 
-                let vidInfo = result.result;
-
-                this.vidInfo.push(vidInfo);
-
-                let vidSec = converter.convertToSecond(vidInfo.rawDur);
-
-                this.totSec += vidSec;
-
-                if (vidInfo.cap === "Yes") {
-                  this.numCap++;
-                  this.secCap += vidSec;
+                        if (vidInfo.cap === "Yes") {
+                          this.numCap++;
+                          this.secCap += vidSec;
+                        }
+                      })
                 }
               })
         }
+
       });
 
     },

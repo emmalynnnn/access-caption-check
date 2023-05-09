@@ -40,7 +40,7 @@ app.post("/get-vid-info", function(req, res) {
     console.log("About to print the vid params")
     console.log(req.body);
 
-    getVidInfo(req.body.id, req.body.foldName)
+    getVidInfo(req.body.id, req.body.sheetId, req.body.vidNum)
         .then( results => {
             console.log(results);
             return res.status(200).json({result: results});
@@ -86,13 +86,15 @@ app.post("/create-sheet", function (req, res) {
         if (err) {
             console.log(err);
         } else {
-            moveSheet(response.data.spreadsheetId, folderId);
+            moveSheet(response.data.spreadsheetId, folderId, jwtClient);
+            addHeader(response.data.spreadsheetId, jwtClient);
+            formatSheet(response.data.spreadsheetId, jwtClient);
             return res.status(200).json({id: response.data.spreadsheetId});
         }
     });
 })
 
-async function getVidInfo(id, foldName) {
+async function getVidInfo(id, sheetId, vidNum) {
     let url = "https://www.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails%2CliveStreamingDetails%2Cstatistics&" +
         "id=" + id + "&key=" + YOUTUBE_API_KEY;
     return axios.get(url)
@@ -123,13 +125,47 @@ async function getVidInfo(id, foldName) {
                     info.cap = "No";
                 }
 
-                if (foldName) {
-                    //createRow(foldName, JSON.stringify(info));
+                if (sheetId) {
+                    addRow(sheetId, JSON.stringify(info), vidNum);
                 }
 
                 //console.log("info: " + JSON.stringify(info));
                 return info;
             });
+}
+
+async function addRow(fileId, info, vidNum) {
+    info = JSON.parse(info);
+    console.log("Adding a new row for " + info.title);
+
+    let jwtClient = authorizeGoogle();
+    let sheets = google.sheets({version: 'v4', auth: jwtClient});
+
+    let linkTitle = '=HYPERLINK("' + info.url + '", "' + info.title + '")';
+
+    let values = [
+        [linkTitle, info.date, info.dur, info.cap, info.views, info.profile]
+    ];
+    const resource = {
+        values,
+    };
+
+    let range = "Sheet1!A" + (vidNum + 2) + ":F" + (vidNum + 2);
+
+    sheets.spreadsheets.values.append({
+        spreadsheetId: fileId,
+        range: range,
+        valueInputOption: "user_entered",
+        resource: resource
+    }, function (err, response) {
+        if (err) {
+            console.log('The API returned an error. ' + err);
+        } else {
+            console.log('Result:');
+            console.log(response.data)
+        }
+    });
+
 }
 
 async function auditChannel(channelId, format, pubAfter, pubBefore, foldName) {
@@ -258,8 +294,8 @@ async function getVidIds(pagination, resultsObj, playlistId, pubAfter, pubBefore
 
 }
 
-async function moveSheet(id, folderId) {
-    let jwtClient = authorizeGoogle();
+async function moveSheet(id, folderId, jwtClient) {
+    //let jwtClient = authorizeGoogle();
     const service = google.drive({version: 'v3', auth: jwtClient});
     try {
         // Retrieve the existing parents to remove
@@ -286,6 +322,124 @@ async function moveSheet(id, folderId) {
     }
 }
 
+async function addHeader(id, jwtClient) {
+    let sheets = google.sheets({version: 'v4', auth: jwtClient});
+
+    let values = [
+        ["Video Title", "Date", "Duration", "Captioned", "Views", "Live Stream"]
+    ];
+    const resource = {
+        values,
+    };
+
+    let range = "Sheet1!A1:F1";
+
+    sheets.spreadsheets.values.append({
+        spreadsheetId: id,
+        range: range,
+        valueInputOption: "user_entered",
+        resource: resource
+    }, function (err, response) {
+        if (err) {
+            console.log('The API returned an error. ' + err);
+        } else {
+            console.log('Result:');
+            console.log(response.data)
+        }
+    });
+}
+
+async function formatSheet(id, jwtClient) {
+    let service = google.sheets({version: 'v4', auth: jwtClient});
+    const myRange = {
+        sheetId: 0
+    };
+    const headerRange = {
+        sheetId: 0,
+        startRowIndex: 0,
+        endRowIndex: 1,
+        startColumnIndex: 0
+    }
+    const requests = [
+        {
+            addConditionalFormatRule: {
+                rule: {
+                    ranges: [myRange],
+                    booleanRule: {
+                        condition: {
+                            type: 'TEXT_EQ',
+                            values: [{userEnteredValue: 'Yes'}],
+                        },
+                        format: {
+                            textFormat: {foregroundColor: {green: 0.6}},
+                        },
+                    },
+                },
+                index: 0,
+            },
+        },
+        {
+            addConditionalFormatRule: {
+                rule: {
+                    ranges: [myRange],
+                    booleanRule: {
+                        condition: {
+                            type: 'TEXT_EQ',
+                            values: [{userEnteredValue: 'No'}],
+                        },
+                        format: {
+                            textFormat: {foregroundColor: {red: 0.8}},
+                        },
+                    },
+                },
+                index: 1,
+            },
+        },
+        {
+            addConditionalFormatRule: {
+                rule: {
+                    ranges: [headerRange],
+                    booleanRule: {
+                        condition: {
+                            type: 'NOT_BLANK',
+                        },
+                        format: {
+                            textFormat: {bold: true},
+                        },
+                    },
+                },
+                index: 2,
+            },
+        },
+        {
+            updateSheetProperties: {
+                properties: {
+                    sheetId: 0,
+                    gridProperties: {
+                        frozenRowCount: 1
+                    }
+                },
+                fields: "gridProperties.frozenRowCount"
+            }
+        }
+    ];
+    const resource = {
+        requests,
+    };
+    try {
+        const response = await service.spreadsheets.batchUpdate({
+            spreadsheetId: id,
+            resource,
+        });
+        console.log(`${response.data.replies.length} cells updated.`);
+        return response;
+    } catch (err) {
+        console.log(err);
+        //throw err;
+    }
+
+}
+
 function authorizeGoogle() {
     let jwtClient = new google.auth.JWT(
         privatekey.client_email,
@@ -304,37 +458,6 @@ function authorizeGoogle() {
         }
     });
     return jwtClient;
-}
-
-async function addRow(foldName, info) {
-
-    info = JSON.parse(info);
-    let jwtClient = authorizeGoogle();
-    let sheets = google.sheets({version: 'v4', auth: jwtClient});
-
-    let fileId = "1QTSzGrcbsXmk4V_IRwJGOYpkl0jkqT7D5FfmQUlrFzY";
-
-    let values = [
-        [info.title, info.cap, info.rawDur]
-    ];
-    const resource = {
-        values,
-    };
-
-    sheets.spreadsheets.values.append({
-        spreadsheetId: fileId,
-        range: "Sheet1!A1:A3",
-        valueInputOption: "user_entered",
-        resource: resource
-    }, function (err, response) {
-        if (err) {
-            console.log('The API returned an error. ' + err);
-        } else {
-            console.log('Result:');
-            console.log(response.data)
-        }
-    });
-
 }
 
 const server = app.listen(8000, () => {
