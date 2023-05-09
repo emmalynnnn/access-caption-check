@@ -166,6 +166,19 @@ export default {
         this.totSec = 0;
         this.secCap = results.secCap;
 
+        //console.log("The sheet id is: " + results.sheetId);
+
+        if (foldName) {
+          this.postData(this.SERVER_URL + "create-sheet/", {foldName: foldName, name: this.name})
+              .then ( result => {
+                console.log("The id is " + result.id);
+                return result.id
+              })
+              .then (id => {
+
+              })
+        }
+
         let sumInfo = 0;
 
         for (let i = 0; i < results.vidIds.length; i++) {
@@ -173,6 +186,9 @@ export default {
 
           this.postData(this.SERVER_URL + "get-vid-info/", {id: results.vidIds[i], foldName: foldName})
               .then (result => {
+
+                //console.log("The sheet id is: " + results.sheetId);
+
                 let vidInfo = result.result;
 
                 this.vidInfo.push(vidInfo);

@@ -50,6 +50,48 @@ app.post("/get-vid-info", function(req, res) {
         });
 })
 
+app.post("/create-sheet", function (req, res) {
+    console.log("Creating a sheet")
+    //TODO: get folder id from foldName
+    let folderId = "13h-35-rhh0Rl9lGn7F9eYYttPXvAulyk";
+
+    let name = req.body.name;
+    let foldName = req.body.foldName;
+    console.log("Creating the sheet for " + name + " in " + foldName);
+
+    if (!foldName) {
+        return res.status(200).json({id: "You don't need thatttt"});
+    }
+
+    let jwtClient = authorizeGoogle();
+
+    const sheets = google.sheets({version: 'v4', auth: jwtClient});
+
+    let date_ob = new Date();
+    let date = ("0" + date_ob.getDate()).slice(-2);
+    let month = ("0" + (date_ob.getMonth() + 1)).slice(-2);
+    let year = date_ob.getFullYear();
+
+    let title = year + "-" + month + "-" + date + " " + name
+
+    const resource = {
+        properties: {
+            title: title,
+        },
+    };
+    sheets.spreadsheets.create({
+        resource,
+        fields: 'spreadsheetId',
+    }, function (err, response) {
+        if (err) {
+            console.log(err);
+        } else {
+            moveSheet(response.data.spreadsheetId, folderId);
+            return res.status(200).json({id: response.data.spreadsheetId});
+        }
+    });
+})
+
 async function getVidInfo(id, foldName) {
     let url = "https://www.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails%2CliveStreamingDetails%2Cstatistics&" +
         "id=" + id + "&key=" + YOUTUBE_API_KEY;
@@ -82,7 +124,7 @@ async function getVidInfo(id, foldName) {
                 }
 
                 if (foldName) {
-                    createRow(foldName, JSON.stringify(info))
+                    //createRow(foldName, JSON.stringify(info));
                 }
 
                 //console.log("info: " + JSON.stringify(info));
@@ -113,29 +155,26 @@ async function auditChannel(channelId, format, pubAfter, pubBefore, foldName) {
         "key=" + YOUTUBE_API_KEY +
         "&id=" + channelId + "&part=snippet%2CcontentDetails%2Cstatistics";
 
-    try {
-        return axios.get(url)
-            .then( response => {
-                let json = response.data;
+    return axios.get(url)
+        .then( response => {
+            let json = response.data;
 
-                resultsObj.numVid = json.items[0].statistics.videoCount;
-                resultsObj.name = json.items[0].snippet.title;
-                let playlistId = json.items[0].contentDetails.relatedPlaylists.uploads;
+            resultsObj.numVid = json.items[0].statistics.videoCount;
+            resultsObj.name = json.items[0].snippet.title;
+            let playlistId = json.items[0].contentDetails.relatedPlaylists.uploads;
 
-                let pagination = false;
-                if (resultsObj.numVid > VIDS_ON_PAGE) {
-                    pagination = true;
-                }
+            let pagination = false;
+            if (resultsObj.numVid > VIDS_ON_PAGE) {
+                pagination = true;
+            }
 
-                createSheet(foldName, resultsObj.name);
-
-                return getVidIds(pagination, resultsObj, playlistId, pubAfter, pubBefore, yearAft, monthAft, dayAft,
-                    yearBef, monthBef, dayBef, "");})
-
-    } catch (error) {
-        console.log(error.message);
-        return "";
-    }
+            return getVidIds(pagination, resultsObj, playlistId, pubAfter, pubBefore, yearAft, monthAft, dayAft,
+                yearBef, monthBef, dayBef, "");
+        })
+        .catch(error => {
+            console.log(error.message);
+            return "";
+    });
 
 }
 
@@ -219,58 +258,32 @@ async function getVidIds(pagination, resultsObj, playlistId, pubAfter, pubBefore
 
 }
 
-async function createSheet(foldName, name) {
-    console.log("Creating the sheet for " + name + " in " + foldName);
-
+async function moveSheet(id, folderId) {
     let jwtClient = authorizeGoogle();
+    const service = google.drive({version: 'v3', auth: jwtClient});
+    try {
+        // Retrieve the existing parents to remove
+        const file = await service.files.get({
+            fileId: id,
+            fields: 'parents',
+        });
 
-    const service = google.drive({version: 'v3', jwtClient});
-
-    let folderId = "13h-35-rhh0Rl9lGn7F9eYYttPXvAulyk";
-
-
-    const fileMetadata = {
-        name: 'Test file',
-        parents: [folderId],
-    };
-    const media = {
-        mimeType: 'application/vnd.google-apps.spreadsheet',
-        /*body: fs.createReadStream('files/photo.jpg'),*/
-    };
-
-    service.files.create({
-        auth: jwtClient,
-        resource: fileMetadata,
-        media: media,
-        fields: 'id'
-    }, function (err, response) {
-        if (err) {
-            console.log('The API returned an error: ' + err);
-        } else {
-            console.log('File Id:', response.data.id);
-            return response.data.id;
-        }
-    });
-
-
-    /*
-    READING:
-    let spreadsheetId = '1-YV9BR1TVWMeheoMdNoHSVSEnfOK1Qge0bMVCT0SL_8';
-    let sheetName = 'Test!A1:B14'
-    let sheets = google.sheets('v4');
-
-    sheets.spreadsheets.values.get({
-        auth: jwtClient,
-        spreadsheetId: spreadsheetId,
-        range: sheetName
-    }, function (err, response) {
-        if (err) {
-            console.log('The API returned an error: ' + err);
-        } else {
-            console.log('List from Google Sheets:');
-            console.log(response.data.values)
-        }
-    });*/
+        // Move the file to the new folder
+        const previousParents = file.data.parents
+            .join(',');
+        const files = await service.files.update({
+            fileId: id,
+            addParents: folderId,
+            removeParents: previousParents,
+            fields: 'id, parents',
+        });
+        console.log(files.status);
+        console.log("Here is the spreadsheet id from within moveSheet: " + id);
+        id;
+    } catch (err) {
+        console.log(err);
+        //throw err;
+    }
 }
 
 function authorizeGoogle() {
@@ -293,32 +306,32 @@ function authorizeGoogle() {
     return jwtClient;
 }
 
-async function createRow(foldName, info) {
-    //console.log("Creating a new row with " + info);
+async function addRow(foldName, info) {
+
+    info = JSON.parse(info);
     let jwtClient = authorizeGoogle();
-    let sheets = google.sheets({version: 'v4', jwtClient});
+    let sheets = google.sheets({version: 'v4', auth: jwtClient});
 
-    //TODO: currently modifying to follow this example: https://developers.google.com/sheets/api/guides/values
-
-    let fileId = "1SkNgZZZ-LNdGogmh95yAfFWXba6CFL43";
+    let fileId = "1QTSzGrcbsXmk4V_IRwJGOYpkl0jkqT7D5FfmQUlrFzY";
 
     let values = [
-        ["Cool", "wow", "fun"],
-        ["bagel", "bagel", "bagel"]
+        [info.title, info.cap, info.rawDur]
     ];
     const resource = {
         values,
     };
 
-    sheets.spreadsheets.values.update({
-        spreadsheetId: spreadsheetId,
-        range: sheetName
+    sheets.spreadsheets.values.append({
+        spreadsheetId: fileId,
+        range: "Sheet1!A1:A3",
+        valueInputOption: "user_entered",
+        resource: resource
     }, function (err, response) {
         if (err) {
-            console.log('The API returned an error: ' + err);
+            console.log('The API returned an error. ' + err);
         } else {
-            console.log('List from Google Sheets:');
-            console.log(response.data.values)
+            console.log('Result:');
+            console.log(response.data)
         }
     });
 
