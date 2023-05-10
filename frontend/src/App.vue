@@ -100,7 +100,30 @@ export default {
       downloaded: false,
       SERVER_URL: "http://localhost:8000/",
       sheetId: "",
+      vidsFound: 0,
+      numToCheckFor: 0,
     };
+  },
+
+  watch: {
+    vidsFound(newVidsFound, oldVidsFound) {
+      //console.log("Changed to " + newVidsFound + ". Is it " + this.numToCheckFor + "??");
+
+      if (this.vidInfo[this.vidInfo.length - 1] === "nope") {
+        //console.log("Found a bad one :(");
+        this.numToCheckFor++;
+      }
+
+      if (newVidsFound === parseInt(this.numToCheckFor)) {
+        //console.log("Found them all");
+
+        //console.log("Sending " + this.vidInfo);
+        this.postData(this.SERVER_URL + "fill-sheet/", {sheetId: this.sheetId, vidInfo: this.vidInfo})
+            .then(response => {
+              //console.log(response);
+            });
+      }
+    }
   },
 
   methods: {
@@ -139,6 +162,7 @@ export default {
       this.channelId = "";
       this.downloaded = false;
       this.name = "";
+      this.vidsFound = 0;
     },
 
     auditTheChannel(channelId, format, pubAfter, pubBefore, foldName) {
@@ -162,6 +186,7 @@ export default {
         this.noData = false;
 
         this.numVid = results.numVid;
+        this.numToCheckFor = results.numVid;
         this.name = results.name;
         this.numCap = results.numCap;
         this.totSec = 0;
@@ -180,13 +205,18 @@ export default {
               .then (sheetId => {
                 for (let i = 0; i < results.vidIds.length; i++) {
                   //console.log(results.vidIds[i]);
+                  let isLast = false;
+                  if (i === results.vidIds.length - 1) {
+                    isLast = true;
+                  }
 
-                  this.postData(this.SERVER_URL + "get-vid-info/", {id: results.vidIds[i], sheetId: sheetId, vidNum: i})
+                  this.postData(this.SERVER_URL + "get-vid-info/", {id: results.vidIds[i]})
                       .then (result => {
 
                         let vidInfo = result.result;
 
                         this.vidInfo.push(vidInfo);
+                        this.vidsFound++;
 
                         let vidSec = converter.convertToSecond(vidInfo.rawDur);
 
@@ -196,6 +226,7 @@ export default {
                           this.numCap++;
                           this.secCap += vidSec;
                         }
+
                       })
                 }
               })
@@ -203,12 +234,14 @@ export default {
           for (let i = 0; i < results.vidIds.length; i++) {
             //console.log(results.vidIds[i]);
 
-            this.postData(this.SERVER_URL + "get-vid-info/", {id: results.vidIds[i], sheetId: "", vidNum: ""})
+
+            this.postData(this.SERVER_URL + "get-vid-info/", {id: results.vidIds[i], sheetId: "", vidNum: "", isLast: false, vidInfo: ""})
                 .then (result => {
 
                   let vidInfo = result.result;
 
                   this.vidInfo.push(vidInfo);
+                  this.vidsFound++;
 
                   let vidSec = converter.convertToSecond(vidInfo.rawDur);
 

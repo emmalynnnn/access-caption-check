@@ -141,9 +141,14 @@ Create a trigger in Monday that will kick off the process to run a report that w
 * I think I need to wait for google drive permissions to propagate through the system so I'll come back to this
 * Working on getting drive api to work
 
-### 5.8.23
+### 5.9.23
 * Creating and naming the spreadsheet is working, now working on filling it in and formatting it
 * Spreadsheets filled in and formatted
+
+### 5.10.23
+* Fixed issues with spreadsheets and minimized API calls needed
+* Add folder ids for production folders
+* Finished with phase 2
 
 ## TODO
 * Table formatting
@@ -151,7 +156,9 @@ Create a trigger in Monday that will kick off the process to run a report that w
 * Testing and exception handling
 * Quota limit issue
 * AxiosError: read ECONNRESET??
-* Change sheets population to update all rows at once
+
+Next version:
+* Google drive folder selection
 
 Dependencies:
 * Vue
