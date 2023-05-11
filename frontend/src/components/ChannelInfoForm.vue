@@ -5,9 +5,9 @@
 
 
     <div class="a-box">
-      <p>Student Retention: UCRPI0furXHcZ7yLgvVNlHDg</p>
+      <!--<p>Student Retention: UCRPI0furXHcZ7yLgvVNlHDg</p>
       <p>Aggie Radio: UCNuyoAnorbXfITrjF2WqmAQ</p>
-      <p>USU Opera: UCJVp8EsMap1PQH-UIxQ00EA</p>
+      <p>USU Opera: UCJVp8EsMap1PQH-UIxQ00EA</p>-->
       <label for="channel-id-input" class="label__lg">
         <span style="color: brown">*</span>YouTube Channel ID:
       </label>
@@ -100,6 +100,8 @@ export default {
         this.showFolderField = true;
       } else {
         this.showFolderField = false;
+        this.showSubFolderField = false;
+        this.foldName = "";
       }
     },
     showTheSubFolderField(event) {
@@ -161,6 +163,7 @@ export default {
       this.pubBefore = "";
       this.foldName = "";
       this.showFolderField = false;
+      this.showSubFolderField = false;
     },
   },
 
@@ -189,6 +192,7 @@ export default {
              [{text: "Fake 1", value: "Fake 1"}, {text: "Fake 2", value: "Fake 2"}]
       },
       FOLDER_NAMES: [
+        {text: "Test", value: "Test"},
         {text: "Abandoned", value: "Abandoned"},
         {text: "Advancement", value: "Advancement"},
         {text: "Athletics", value: "Athletics"},
@@ -218,6 +222,11 @@ export default {
         {text: "Unknown", value: "Unknown"},
       ],
       SUB_FOLDER_NAMES: {
+        "Test":
+            [
+              {text: "Test 1", value: "Test 1"},
+              {text: "Test 2", value: "Test 2"},
+            ],
         "Abandoned":
             [
               {text: "Audiology", value: "Abandoned - Audiology"},

@@ -149,6 +149,10 @@ Create a trigger in Monday that will kick off the process to run a report that w
 * Fixed issues with spreadsheets and minimized API calls needed
 * Add folder ids for production folders
 * Finished with phase 2
+* 
+
+### 5.11.23
+* Beginning on phase 3
 
 ## TODO
 * Table formatting

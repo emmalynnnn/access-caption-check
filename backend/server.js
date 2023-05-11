@@ -9,6 +9,11 @@ const converter = require("../frontend/src/assets/dur-iso");
 const app = express();
 app.use(bodyParser.json());
 
+const GetChannelInfo = require("./get-channel-info");
+const getChannelInfo = new GetChannelInfo();
+const UpdateMonday = require("./update-monday");
+const updateMonday = new UpdateMonday();
+
 const axios = require('axios');
 
 const cors = require('cors');
@@ -18,16 +23,14 @@ app.use(cors({
 
 const YOUTUBE_API_KEY = process.env.YOUTUBE_API;
 const VIDS_ON_PAGE = 50;
+const MONDAY_API_KEY = process.env.MONDAY_API;
 
-const TEST_FOLDER_IDS = {
-    "Test 1": "1-zaZ8NACPMCdOKMosR-mei-TjEA77i3W",
-    "Test 2": "1CdXZn20E2jhsLpzH3oH-dpsxTpBP27Fx",
-}
+const MOST_RECENT_VID_COL = "date"
 
 app.get('/', (req, res) => {
     console.log("---------------- / ----------------");
     console.log("end ---------------- / ----------------");
-    res.send("Heyyyyy friends");
+    res.send("Hello World!");
 });
 
 app.post("/", function(req, res) {
@@ -89,8 +92,7 @@ app.post("/create-sheet", function (req, res) {
     let name = req.body.name;
     let foldName = req.body.foldName;
 
-    //TODO: get folder id from foldName
-    let folderId = TEST_FOLDER_IDS[foldName];
+    let folderId = FOLDER_IDS[foldName];
 
     if (!foldName) {
         return res.status(200).json({id: "You don't need thatttt"});
@@ -127,6 +129,84 @@ app.post("/create-sheet", function (req, res) {
         }
     });
 })
+
+app.post("/webhook-endpoint", function(req, res) {
+    res.status(200).send(req.body);
+
+    if (req.body.hasOwnProperty("event")) {
+        let itemId = req.body.event.pulseId;
+        let channelName = req.body.event.pulseName;
+        let boardId = req.body.event.boardId;
+
+        console.log("Triggered on " + channelName);
+        getChannelId(res, itemId, boardId)
+            .then (rowInfo => {
+                if (rowInfo.error !== undefined) {
+                    console.log("There was an error getting the row info :(");
+                    console.log(rowInfo.error);
+                    res.status(500).send(rowInfo.error);
+                    return;
+                }
+                doMondayYoutube(res, rowInfo);
+            });
+
+    }
+})
+
+function doMondayYoutube(res, rowInfo) {
+    getChannelInfo.updateChannelInfo(res, rowInfo);
+}
+
+async function postData(url, data, headers) {
+
+    return axios.post(url, data, headers)
+        .then(response => {
+            return response.data;
+        })
+        .catch(error => {
+            throw error;
+        });
+}
+
+async function getChannelId(res, itemId, boardId) {
+    console.log("Getting the channel Id")
+
+    let query = '{ boards(ids:' + boardId + ') { name items(ids: ' + itemId + ' ) { name id column_values ' +
+        '(ids: [text ' + MOST_RECENT_VID_COL + ']) { text }} } }';
+
+    const url = "https://api.monday.com/v2";
+    const body = {
+        query: query,
+        variables: {}
+    };
+    const headers = {
+        headers: {Authorization: MONDAY_API_KEY}
+    };
+
+    return postData(url, body, headers)
+        .then( result => {
+            console.log(result);
+            let item = result.data.boards[0].items[0];
+            let row = {name: item.name, itemId: item.id, channelId: item.column_values[0].text,
+                mostRecentVid: item.column_values[1].text, boardId: boardId};
+            console.log(item, row);
+
+            if (item.column_values[0].text === "") {
+                console.log("No channel id given for " + item.name);
+                updateMonday.updateStatus(res, row, "error");
+                return;
+            }
+
+            console.log("Successfully found info for " + item.name);
+            return row;
+        })
+        .catch( err => {
+            //res.status(500).send(err.message);
+            console.log(err.message);
+            return {error: err.message};
+        });
+
+}
 
 async function getVidInfo(id) {
     let url = "https://www.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails%2CliveStreamingDetails%2Cstatistics&" +
@@ -502,7 +582,15 @@ const server = app.listen(8000, () => {
     console.log('Running at 8000');
 });
 
+/*app.use(async (req, res, next) => {
+    return res.status(404).json({
+        error: "Not Found",
+    });
+});*/
+
 const FOLDER_IDS = {
+    "Test 1": "1-zaZ8NACPMCdOKMosR-mei-TjEA77i3W",
+    "Test 2": "1CdXZn20E2jhsLpzH3oH-dpsxTpBP27Fx",
     "Abandoned - Audiology": "1I9CnBxQLgiFv7yueIbkIdHKXZZP6-JWJ",
     "International Ambassadors": "1U3wVrv1nsuilWUO-YItWvm_7mRzxZOFD",
     "Intersections": "1MVGywVlggK3ovsXqcMTPdNybxW3dB8Os",
