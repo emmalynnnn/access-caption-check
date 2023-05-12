@@ -6,13 +6,11 @@ const axios = require('axios');
 class GetChannelInfo {
 
     async updateChannelInfo(res, channelInfo) {
-        console.log("In updateChannelInfo");
-        console.log(channelInfo);
-        console.log(channelInfo.name);
+        //console.log("In updateChannelInfo");
+        //console.log(channelInfo);
+        //console.log(channelInfo.name);
 
-        let toReturn = this.makeChannelAPICall(res, channelInfo);
-        console.log("toReturn: " + toReturn);
-        return toReturn;
+        return this.makeChannelAPICall(res, channelInfo);
     }
 
     async getData(url, data) {
@@ -72,14 +70,14 @@ class GetChannelInfo {
 
         return this.getData(url)
             .then( dataObj => {
-                console.log(dataObj);
+                //console.log(dataObj);
 
                 let validatedResponse = this.validateResponse(dataObj, 1);
                 if (validatedResponse !== 0 && validatedResponse !== 1) {
 
                     let uploadPlaylistId = validatedResponse.contentDetails.relatedPlaylists.uploads;
 
-                    console.log("Updating playlist id: " + uploadPlaylistId);
+                    //console.log("Updating playlist id: " + uploadPlaylistId);
 
                     //updating other info:
                     let subCount = validatedResponse.statistics.subscriberCount;
@@ -91,7 +89,7 @@ class GetChannelInfo {
                     channelInfo.viewCount = viewCount;
                     channelInfo.videoCount = videoCount;
 
-                    console.log(channelInfo);
+                    //console.log(channelInfo);
 
                     return this.getPlaylistItemInfo(res, channelInfo);
                 } else if (validatedResponse === 1) {
@@ -121,8 +119,8 @@ class GetChannelInfo {
 
         return this.getData(url)
             .then(result => {
-                console.log("Getting playlist item info")
-                console.log(result);
+                //console.log("Getting playlist item info")
+                //console.log(result);
                 let dataObj = result;
 
                 let validatedResponse = this.validateResponse(dataObj, 2);
@@ -142,8 +140,8 @@ class GetChannelInfo {
                             date: validatedResponse.contentDetails.videoPublishedAt};
                         channelInfo.mostRecentVideo = recentVideo;
 
-                        console.log("video info: " + recentVideo.date);
-                        console.log(channelInfo);
+                        //console.log("video info: " + recentVideo.date);
+                        //console.log(channelInfo);
 
                         return channelInfo;
 
