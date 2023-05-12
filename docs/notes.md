@@ -149,10 +149,14 @@ Create a trigger in Monday that will kick off the process to run a report that w
 * Fixed issues with spreadsheets and minimized API calls needed
 * Add folder ids for production folders
 * Finished with phase 2
-* 
 
 ### 5.11.23
 * Beginning on phase 3
+
+### 5.12.23
+* Adapting MondayYoutube code for this project
+* Refactored backend some
+* Kept working on enabling webhook functionality
 
 ## TODO
 * Table formatting
