@@ -60,7 +60,7 @@ class UpdateMonday {
             .then(result => {
                 console.log(result);
                 this.checkResponse(JSON.stringify(result, null, 2));
-                this.updateStatus(res, channelInfo, "update");
+                //this.updateStatus(res, channelInfo, "update");
             })
             .catch(error => {
                 console.log(error);

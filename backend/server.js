@@ -25,7 +25,11 @@ const YOUTUBE_API_KEY = process.env.YOUTUBE_API;
 const VIDS_ON_PAGE = 50;
 const MONDAY_API_KEY = process.env.MONDAY_API;
 
-const MOST_RECENT_VID_COL = "date"
+const MOST_RECENT_VID_COL = "date";
+const NUM_CAP_COL = "numbers4";
+const SEC_COL = "numbers6";
+const SEC_CAP_COL = "numbers5";
+const REPORT_COL = "link1";
 
 app.get('/', (req, res) => {
     console.log("---------------- / ----------------");
@@ -37,7 +41,7 @@ app.post("/", function(req, res) {
     console.log("---------------- / ----------------");
     console.log(req.body);
 
-    auditChannel(req.body.channelId, req.body.format, req.body.pubAfter, req.body.pubAfter, req.body.foldName)
+    auditChannel(req.body.channelId, req.body.format, req.body.pubAfter, req.body.pubBefore, req.body.foldName)
         .then( results => {
             console.log(results);
             console.log("end ---------------- / ----------------");
@@ -154,7 +158,41 @@ app.post("/webhook-endpoint", function(req, res) {
 })
 
 function doMondayYoutube(res, rowInfo) {
-    getChannelInfo.updateChannelInfo(res, rowInfo);
+    //let oldMostRecentVid = rowInfo.mostRecentVid;
+    getChannelInfo.updateChannelInfo(res, rowInfo)
+        .then(info => {
+            console.log("The info: " + JSON.stringify(info));
+            if (info.status !== undefined) {
+                console.log("There was an error :( " + info.status);
+                updateMonday.updateStatus(res, row, "error");
+                res.status(500).send(rowInfo.error);
+                return;
+            }
+
+            updateMonday.updateBoard(res, rowInfo);
+
+            let newDate = info.mostRecentVideo.date.substring(0, info.mostRecentVideo.date.indexOf("T"));
+
+            console.log("Old date: " + rowInfo.mostRecentVid, "New date: " + newDate);
+            if (rowInfo.mostRecentVid === newDate) {
+                updateMonday.updateStatus(res, info, "update");
+                return;
+            } else {
+                console.log("There's a new video, and the channel needs to be audited");
+
+                auditChannel(info.channelId, "Sheets", "", "", "ID found", info)
+                    .then( results => {
+                        console.log(results);
+                        console.log("To audit: " + results.vidIds);
+
+
+                        //return res.status(200).json({result: results});
+                    }).catch( err => {
+                    console.log(err);
+                    //return res.status(500).json({result: "Error: channel audit failed"});
+                });
+            }
+        });
 }
 
 async function postData(url, data, headers) {
@@ -171,8 +209,10 @@ async function postData(url, data, headers) {
 async function getChannelId(res, itemId, boardId) {
     console.log("Getting the channel Id")
 
+    const colIds = `[text, ${REPORT_COL}, ${MOST_RECENT_VID_COL}, ${NUM_CAP_COL}, ${SEC_COL}, ${SEC_CAP_COL}]`
+
     let query = '{ boards(ids:' + boardId + ') { name items(ids: ' + itemId + ' ) { name id column_values ' +
-        '(ids: [text ' + MOST_RECENT_VID_COL + ']) { text }} } }';
+        '(ids: ' + colIds + ') { text }} } }';
 
     const url = "https://api.monday.com/v2";
     const body = {
@@ -185,10 +225,15 @@ async function getChannelId(res, itemId, boardId) {
 
     return postData(url, body, headers)
         .then( result => {
-            console.log(result);
+            console.log(JSON.stringify(result));
             let item = result.data.boards[0].items[0];
+            let foldId = item.column_values[1].text;
+            foldId = foldId.substring(foldId.indexOf("folders/") + 8);
+
             let row = {name: item.name, itemId: item.id, channelId: item.column_values[0].text,
-                mostRecentVid: item.column_values[1].text, boardId: boardId};
+                mostRecentVid: item.column_values[2].text, capedVids: item.column_values[3].text,
+                secs: item.column_values[4].text, capedSecs: item.column_values[5].text,
+                foldId: foldId, boardId: boardId};
             console.log(item, row);
 
             if (item.column_values[0].text === "") {
@@ -204,6 +249,72 @@ async function getChannelId(res, itemId, boardId) {
             //res.status(500).send(err.message);
             console.log(err.message);
             return {error: err.message};
+        });
+
+}
+
+async function auditChannel(channelId, format, pubAfter, pubBefore, foldName, previousInfo=undefined) {
+
+    console.log("Auditing " + channelId);
+    console.log(channelId, format, pubAfter, pubBefore, foldName);
+
+    if (pubAfter) {
+        var yearAft = parseInt(pubAfter.substring(0, 4));
+        var monthAft = parseInt(pubAfter.substring(5, 7));
+        var dayAft = parseInt(pubAfter.substring(8));
+    }
+
+    if (pubBefore) {
+        var yearBef = parseInt(pubBefore.substring(0, 4));
+        var monthBef = parseInt(pubBefore.substring(5, 7));
+        var dayBef = parseInt(pubBefore.substring(8));
+    }
+
+    let resultsObj = {numVid: 0, name: "", numCap: 0, totSec: 0, secCap: 0, vidIds: []}
+
+    if (previousInfo !== undefined) {
+        resultsObj.numVid = previousInfo.videoCount;
+        resultsObj.name = previousInfo.name;
+        resultsObj.numCap = previousInfo.capedVids;
+        resultsObj.totSec = previousInfo.secs;
+        resultsObj.secCap = previousInfo.capedSecs;
+
+        let pagination = false;
+        if (resultsObj.numVid > VIDS_ON_PAGE) {
+            pagination = true;
+        }
+
+        return getVidIds(pagination, resultsObj, previousInfo.uploadPlaylistId, pubAfter, pubBefore, yearAft, monthAft, dayAft,
+            yearBef, monthBef, dayBef, "")
+            .then(allInfo => {
+                allInfo.numVid = previousInfo.videoCount;
+                return allInfo;
+            });
+    }
+
+    let url = "https://youtube.googleapis.com/youtube/v3/channels?" +
+        "key=" + YOUTUBE_API_KEY +
+        "&id=" + channelId + "&part=snippet%2CcontentDetails%2Cstatistics";
+
+    return axios.get(url)
+        .then( response => {
+            let json = response.data;
+
+            resultsObj.numVid = json.items[0].statistics.videoCount;
+            resultsObj.name = json.items[0].snippet.title;
+            let playlistId = json.items[0].contentDetails.relatedPlaylists.uploads;
+
+            let pagination = false;
+            if (resultsObj.numVid > VIDS_ON_PAGE) {
+                pagination = true;
+            }
+
+            return getVidIds(pagination, resultsObj, playlistId, pubAfter, pubBefore, yearAft, monthAft, dayAft,
+                yearBef, monthBef, dayBef, "");
+        })
+        .catch(error => {
+            console.log(error.message);
+            return "";
         });
 
 }
@@ -283,52 +394,6 @@ async function fillSheet(fileId, info) {
             //console.log('Result:');
             //console.log(response.data)
         }
-    });
-
-}
-
-async function auditChannel(channelId, format, pubAfter, pubBefore, foldName) {
-
-    console.log("Auditing " + channelId);
-    console.log(channelId, format, pubAfter, pubBefore, foldName);
-
-    if (pubAfter) {
-        var yearAft = parseInt(pubAfter.substring(0, 4));
-        var monthAft = parseInt(pubAfter.substring(5, 7));
-        var dayAft = parseInt(pubAfter.substring(8));
-    }
-
-    if (pubBefore) {
-        var yearBef = parseInt(pubBefore.substring(0, 4));
-        var monthBef = parseInt(pubBefore.substring(5, 7));
-        var dayBef = parseInt(pubBefore.substring(8));
-    }
-
-    let resultsObj = {numVid: 0, name: "", numCap: 0, totSec: 0, secCap: 0, vidIds: []}
-
-    let url = "https://youtube.googleapis.com/youtube/v3/channels?" +
-        "key=" + YOUTUBE_API_KEY +
-        "&id=" + channelId + "&part=snippet%2CcontentDetails%2Cstatistics";
-
-    return axios.get(url)
-        .then( response => {
-            let json = response.data;
-
-            resultsObj.numVid = json.items[0].statistics.videoCount;
-            resultsObj.name = json.items[0].snippet.title;
-            let playlistId = json.items[0].contentDetails.relatedPlaylists.uploads;
-
-            let pagination = false;
-            if (resultsObj.numVid > VIDS_ON_PAGE) {
-                pagination = true;
-            }
-
-            return getVidIds(pagination, resultsObj, playlistId, pubAfter, pubBefore, yearAft, monthAft, dayAft,
-                yearBef, monthBef, dayBef, "");
-        })
-        .catch(error => {
-            console.log(error.message);
-            return "";
     });
 
 }

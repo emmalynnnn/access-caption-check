@@ -9,7 +9,10 @@ class GetChannelInfo {
         console.log("In updateChannelInfo");
         console.log(channelInfo);
         console.log(channelInfo.name);
-        return this.makeChannelAPICall(res, channelInfo);
+
+        let toReturn = this.makeChannelAPICall(res, channelInfo);
+        console.log("toReturn: " + toReturn);
+        return toReturn;
     }
 
     async getData(url, data) {
@@ -132,7 +135,7 @@ class GetChannelInfo {
 
                     //this.getVideoInfo(res, channelInfo);
 
-                    let validatedResponse = this.validateResponse(dataObj, 3);
+                    validatedResponse = this.validateResponse(dataObj, 3);
                     if (validatedResponse !== 0) {
 
                         let recentVideo = {name: validatedResponse.snippet.title,
@@ -179,37 +182,6 @@ class GetChannelInfo {
                     return channelInfo;
                 }
             });
-    }
-
-    async getVideoInfo(res, channelInfo) {
-
-        let url = "https://youtube.googleapis.com/youtube/v3/playlistItems?" +
-            "key=" + YOUTUBE_API_KEY +
-            "&playlistId=" + channelInfo.uploadPlaylistId + "&part=snippet%2CcontentDetails";
-
-        this.getData(url)
-            .then(dataObj => {
-                console.log(dataObj);
-
-                let validatedResponse = this.validateResponse(dataObj, 3);
-                if (validatedResponse !== 0) {
-
-                    let recentVideo = new Video(validatedResponse.snippet.title, validatedResponse.contentDetails.videoPublishedAt);
-                    channelInfo.updateMostRecentVideo(recentVideo);
-
-                    console.log("video info: " + recentVideo.date);
-                    console.log(channelInfo);
-
-                    updateMonday.updateBoard(res, channelInfo);
-                } else {
-                    console.log("Information could not be found on the most recent video for " + channelInfo.name);
-                    updateMonday.updateStatus(res, channelInfo, "error");
-                }
-            })
-            .catch(error => {
-                console.log(error.message);
-                res.status(500).send(error.message);
-            })
     }
 }
 
