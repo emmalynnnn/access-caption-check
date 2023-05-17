@@ -135,7 +135,7 @@ class Auditor {
 
                     let id = json.items[i].snippet.resourceId.videoId;
                     let name = json.items[i].snippet.title;
-                    console.log(name);
+                    //console.log(name);
                     let dateUploaded = json.items[i].snippet.publishedAt;
 
                     //date filtering:
@@ -183,12 +183,12 @@ class Auditor {
                 }
 
                 if (!pagination) {
-                    console.log("Andddd we're done");
+                    //console.log("Andddd we're done");
                     return resultsObj;
                 } else {
                     let newNextPageToken = json.nextPageToken;
                     if (newNextPageToken === undefined) {
-                        console.log("Andddd we're done");
+                        //console.log("Andddd we're done");
                         return resultsObj;
                     }
                     return this.getVidIds(pagination, resultsObj, playlistId, pubAfter, pubBefore, yearAft, monthAft, dayAft,

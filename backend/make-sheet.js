@@ -7,7 +7,7 @@ class MakeSheet {
 
         let folderId = foldNameOrId;
         if (!isFoldId) {
-            folderId = this.FOLDER_IDS[foldName];
+            folderId = this.FOLDER_IDS[foldNameOrId];
         }
 
         let jwtClient = this.authorizeGoogle();
@@ -19,7 +19,7 @@ class MakeSheet {
         let month = ("0" + (date_ob.getMonth() + 1)).slice(-2);
         let year = date_ob.getFullYear();
 
-        let title = year + "-" + month + "-" + date + " " + name
+        let title = year + "-" + month + "-" + date + " " + name;
 
         const resource = {
             properties: {
@@ -33,33 +33,19 @@ class MakeSheet {
             if (err) {
                 console.log("Error creating spreadsheet " + err);
             } else {
+                console.log("the id in here", response.data.spreadsheetId);
+
                 const MakeSheet = require("./make-sheet");
                 const makeSheet = new MakeSheet();
 
+                console.log(`Moving ${response.data.spreadsheetId} into ${folderId}`);
                 makeSheet.moveSheet(response.data.spreadsheetId, folderId, jwtClient);
                 makeSheet.addHeader(response.data.spreadsheetId, jwtClient);
                 makeSheet.formatSheet(response.data.spreadsheetId, jwtClient);
                 //return res.status(200).json({id: response.data.spreadsheetId});
-                console.log("the id in here", response.data.spreadsheetId);
                 return response.data.spreadsheetId;
             }
         });
-        /*return sheets.spreadsheets.create({
-            resource,
-            fields: 'spreadsheetId',
-        }).then(response => {
-            const MakeSheet = require("./make-sheet");
-            const makeSheet = new MakeSheet();
-
-            makeSheet.moveSheet(response.data.spreadsheetId, folderId, jwtClient);
-            makeSheet.addHeader(response.data.spreadsheetId, jwtClient);
-            makeSheet.formatSheet(response.data.spreadsheetId, jwtClient);
-            //return res.status(200).json({id: response.data.spreadsheetId});
-            console.log("the id in here", response.data.spreadsheetId);
-            return response.data.spreadsheetId;
-        }).catch(err => {
-            console.log("Error creating spreadsheet " + err);
-        });*/
     }
     async fillSheet(fileId, info) {
         console.log("Filling in the sheet!!")

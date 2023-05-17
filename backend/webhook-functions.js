@@ -39,11 +39,10 @@ class WebhookFunctions {
                     info.status = "Up to date";
                     return info;
                 } else {
-                    console.log("There's a new video, and the channel needs to be audited");
-
-                    return makeSheet.makeSheet(info.name, info.foldName, true)
+                    console.log(`There's a new video, and the channel needs to be audited`);
+                    return makeSheet.makeSheet(info.name, info.foldId, true)
             .then(id => {
-                //console.log("id", id);
+                console.log("here is the sheet id! We have it already!!!", id);
                 info.sheetId = id;
                 return auditor.auditChannel(info.channelId, "Sheets", "", "", "ID found", info)
             .then( results => {

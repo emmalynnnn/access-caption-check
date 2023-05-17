@@ -145,7 +145,8 @@ app.post("/webhook-endpoint", function(req, res) {
                         .then( info => {
                             console.log("The info", info);
                             if (info.status !== "Up to date") {
-                                //TODO: make sheet
+                                //TODO: add to the sheet
+
                                 //TODO: update monday
                                 //updateMonday.updateBoardPostAudit(res, info);
                             }
