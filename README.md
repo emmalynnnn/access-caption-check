@@ -14,7 +14,7 @@ YTCA-USU is currently hosted on AWS and is accessible here: ____
 ### As a web application:
 
 1. Navigate to [the tool](___).
-<img src="demo1.png"/>
+<img src="docs/demo1.png"/>
 2. Paste the YouTube Channel ID for the channel you would like to audit in the 
 specified box.
 3. Select the output format:
@@ -22,7 +22,7 @@ specified box.
    to download.
    * If `Google Sheets` is selected, the report will be displayed as HTML and a 
    new Google sheet will be created in the specified folder.
-   <img src="demo2.png"/>
+   <img src="docs/demo2.png"/>
      * A new input box will appear with the label "Folder". Please select the outer folder you wish
      to store the google sheet in.
      * Once you select the outer folder, another new input box will appear labelled 
@@ -36,7 +36,7 @@ within the specified date range.
 the application may take a moment to respond after Submit is selected. If sending a 
 report to Google Sheets, video results may also take a moment to being loading on the
 next page.
-<img src="demo3.png"/>
+<img src="docs/demo3.png"/>
 6. To download the report as HTML, scroll to the bottom of the page and select "Download".
 If google sheets was selected as the output, the sheet will have been automatically
 created and is accessible in the folder you specified and at the link at the top of
@@ -47,7 +47,7 @@ the page.
 1. Navigate to the YouTube Channels board on monday.com.
 2. On the row for the channel you wish to audit, change the `Update now?` column
 to `Update Now`. The application will automatically be triggered.
-<img src="demo4.png"/>
+<img src="docs/demo4.png"/>
 3. The `Update now?` column will change to `Done` after the audit is complete. If
 there a new video has been uploaded to the channel since the last audit, the application
 will create a google sheet with the video information in the folder specified in the `Reports`
