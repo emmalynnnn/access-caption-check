@@ -139,12 +139,15 @@ app.post("/webhook-endpoint", function(req, res) {
                 if (rowInfo.error !== undefined) {
                     console.log("There was an error getting the row info :(");
                     console.log(rowInfo.error);
-                    res.status(500).send(rowInfo.error);
+                    updateMonday.updateStatus(res, rowInfo, "error");
+                    //res.status(500).send(rowInfo.error);
                 } else {
                     webhook.doMondayYoutube(res, rowInfo)
                         .then( info => {
                             //console.log("The info", info);
-                            if (info.status !== "Up to date" && info !== "") {
+                            if (info.status === "folder id is invalid") {
+                                updateMonday.updateStatus(res, info, "error");
+                            } else if (info.status !== "Up to date" && info !== "") {
                                 makeSheet.fillSheetWebhook(info.sheetId, info.vidInfo);
                                 updateMonday.updateBoardPostAudit(res, info);
                             }

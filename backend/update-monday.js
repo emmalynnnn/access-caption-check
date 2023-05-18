@@ -163,6 +163,7 @@ class UpdateMonday {
 
     async updateStatus(res, channelInfo, type) {
         console.log('marking updated: ' + type);
+        console.log(channelInfo);
         let newStatus = "";
         if (type === "update") {
             newStatus = "Done";

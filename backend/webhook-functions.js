@@ -44,13 +44,23 @@ class WebhookFunctions {
                 if (rowInfo.mostRecentVid === newDate) {
                     updateMonday.updateBoard(res, rowInfo);
                     updateMonday.updateStatus(res, info, "update");
+                    console.log("Up to date");
                     info.status = "Up to date";
                     return info;
                 } else {
                     console.log(`There's a new video, and the channel needs to be audited`);
+                    if (rowInfo.foldId === "") {
+                        updateMonday.updateStatus(res, info, "error");
+                        info.status = "No folder id";
+                        return info;
+                    }
                     return makeSheet.makeSheet(info.name, info.foldId, true)
             .then(id => {
                 console.log("here is the sheet id! We have it already!!!", id);
+                if (id === "folder id is invalid") {
+                    info.status = "folder id is invalid";
+                    return info;
+                }
                 info.sheetId = id;
                 return auditor.auditChannel(info.channelId, "Sheets", "", "", "ID found", info)
             .then( results => {
@@ -118,8 +128,9 @@ class WebhookFunctions {
 
                 if (item.column_values[0].text === "") {
                     console.log("No channel id given for " + item.name);
-                    updateMonday.updateStatus(res, row, "error");
-                    return;
+                    //updateMonday.updateStatus(res, row, "error");
+                    row.error = "no channel id"
+                    return row;
                 }
 
                 //console.log("Successfully found info for " + item.name);

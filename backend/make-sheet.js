@@ -37,7 +37,10 @@ class MakeSheet {
         //const makeSheet = new MakeSheet();
 
         console.log(`Moving ${response.data.spreadsheetId} into ${folderId}`);
-        this.moveSheet(response.data.spreadsheetId, folderId, jwtClient);
+        let moveResult = await this.moveSheet(response.data.spreadsheetId, folderId, jwtClient);
+        if (moveResult !== undefined) {
+            return "folder id is invalid";
+        }
         this.addHeader(response.data.spreadsheetId, jwtClient);
         this.formatSheet(response.data.spreadsheetId, jwtClient);
         //return res.status(200).json({id: response.data.spreadsheetId});
@@ -80,7 +83,7 @@ class MakeSheet {
                 console.log('The API returned an error. ' + err);
             } else {
                 //console.log('Result:');
-                //console.log(response.data)
+                //console.log(response.data);
             }
         });
 
@@ -152,8 +155,13 @@ class MakeSheet {
             });
             //console.log(files.status);
             //console.log("Here is the spreadsheet id from within moveSheet: " + id);
+            return undefined;
         } catch (err) {
-            console.log(err);
+            console.log("Error while moving the sheet.", err.message);
+            if (err.message.startsWith("File not found:")) {
+                console.log("Folder id is invalid.");
+                return "folder id is invalid";
+            }
             //throw err;
         }
     }
