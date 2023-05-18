@@ -26,26 +26,22 @@ class MakeSheet {
                 title: title,
             },
         };
-        return sheets.spreadsheets.create({
+        let response = await sheets.spreadsheets.create({
             resource,
             fields: 'spreadsheetId',
-        }, function (err, response) {
-            if (err) {
-                console.log("Error creating spreadsheet " + err);
-            } else {
-                console.log("the id in here", response.data.spreadsheetId);
-
-                const MakeSheet = require("./make-sheet");
-                const makeSheet = new MakeSheet();
-
-                console.log(`Moving ${response.data.spreadsheetId} into ${folderId}`);
-                makeSheet.moveSheet(response.data.spreadsheetId, folderId, jwtClient);
-                makeSheet.addHeader(response.data.spreadsheetId, jwtClient);
-                makeSheet.formatSheet(response.data.spreadsheetId, jwtClient);
-                //return res.status(200).json({id: response.data.spreadsheetId});
-                return response.data.spreadsheetId;
-            }
         });
+
+        console.log("the id in here", response.data.spreadsheetId);
+
+        //const MakeSheet = require("./make-sheet");
+        //const makeSheet = new MakeSheet();
+
+        console.log(`Moving ${response.data.spreadsheetId} into ${folderId}`);
+        this.moveSheet(response.data.spreadsheetId, folderId, jwtClient);
+        this.addHeader(response.data.spreadsheetId, jwtClient);
+        this.formatSheet(response.data.spreadsheetId, jwtClient);
+        //return res.status(200).json({id: response.data.spreadsheetId});
+        return response.data.spreadsheetId;
     }
     async fillSheet(fileId, info) {
         console.log("Filling in the sheet!!")
@@ -90,8 +86,52 @@ class MakeSheet {
 
     }
 
+    async fillSheetWebhook(fileId, info) {
+
+        let jwtClient = this.authorizeGoogle();
+        let sheets = google.sheets({version: 'v4', auth: jwtClient});
+
+        let values = [];
+
+        Promise.all(info).then((vidInfo) => {
+            //console.log("Filling in the sheet with " + vidInfo)
+            for (let i = 0; i < info.length; i++) {
+                if (vidInfo[i] === 'nope') {
+                    continue;
+                }
+
+                //console.log("Adding row for " + vidInfo[i].title);
+                let linkTitle = '=HYPERLINK("' + vidInfo[i].url + '", "' + vidInfo[i].title + '")';
+                values.push([linkTitle, vidInfo[i].date, vidInfo[i].dur, vidInfo[i].cap, vidInfo[i].views, vidInfo[i].profile]);
+            }
+
+            const resource = {
+                values,
+            };
+
+            let range = "Sheet1!A" + (2) + ":F" + (2);
+
+            console.log("Now we're filling in the sheet");
+            sheets.spreadsheets.values.append({
+                spreadsheetId: fileId,
+                range: range,
+                valueInputOption: "user_entered",
+                resource: resource
+            }, function (err, response) {
+                if (err) {
+                    console.log('The API returned an error. ' + err);
+                } else {
+                }
+            });
+        })
+            .catch(err => {
+                console.log(`There was an error filling in the sheet: ${err.message}`);
+            });
+
+    }
+
     async moveSheet(id, folderId, jwtClient) {
-        console.log("Moving the sheet!!");
+        //console.log("Moving the sheet!!");
         //let jwtClient = authorizeGoogle();
         const service = google.drive({version: 'v3', auth: jwtClient});
         try {

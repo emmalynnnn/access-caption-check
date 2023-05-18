@@ -162,6 +162,9 @@ Create a trigger in Monday that will kick off the process to run a report that w
 * Working more on the webhook
 * Current issue: how do we get the sheet id and the individual video info at the same time to fill in the sheet??
 
+### 5.18.23
+* Finished implementing webhook feature
+
 ## TODO
 * Table formatting
 * Bulk testing

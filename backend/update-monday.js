@@ -8,8 +8,12 @@ const SUB_COL = "numbers";
 const VIEWS_COL = "numbers65";
 const NUM_VIDEOS_COL = "numbers7";
 
+const VIDS_CAP_COL = "numbers4";
+const TOT_SEC_COL = "numbers6";
+const SEC_CAP_COL = "numbers5";
 
 const axios = require('axios');
+const converter = require("../frontend/src/assets/dur-iso");
 
 class UpdateMonday {
 
@@ -69,42 +73,57 @@ class UpdateMonday {
     }
 
     async updateBoardPostAudit(res, channelInfo) {
+        Promise.all(channelInfo.vidInfo).then((vidInfo) => {
+            //console.log("updating the board post audit", channelInfo);
 
-        let newDate = channelInfo.mostRecentVideo.date.substring(0, channelInfo.mostRecentVideo.date.indexOf("T"));
-
-        let query = 'mutation ($columnVals: JSON!) { change_multiple_column_values (board_id:' + channelInfo.boardId +
-            ', item_id:' + channelInfo.itemId +
-            ', column_values:$columnVals) { name id } }';
-        let vars = {
-            "columnVals" : JSON.stringify({
-                [DATE_OF_LAST_VIDEO_COL] : newDate,
-                [SUB_COL] : channelInfo.subscriberCount,
-                [VIEWS_COL] : channelInfo.viewCount,
-                [NUM_VIDEOS_COL] : channelInfo.videoCount
-            })
-        };
-        const headers = {
-            headers: {
-                Authorization: MONDAY_API_KEY
+            let vidsCaped = 0;
+            let secCaped = 0;
+            for (let i = 0; i < vidInfo.length; i++) {
+                if (vidInfo[i].cap === "Yes") {
+                    vidsCaped++;
+                    secCaped += converter.convertToSecond(vidInfo[i].rawDur);
+                }
             }
-        };
-        const url = 'https://api.monday.com/v2';
 
-        const body = {
-            query: query,
-            variables: vars
-        };
+            let newDate = channelInfo.mostRecentVideo.date.substring(0, channelInfo.mostRecentVideo.date.indexOf("T"));
 
-        this.postData(url, body, headers)
-            .then(result => {
-                console.log(result);
-                this.checkResponse(JSON.stringify(result, null, 2));
-                //this.updateStatus(res, channelInfo, "update");
-            })
-            .catch(error => {
-                console.log(error);
-                res.status(500).send(error.message);
-            });
+            let query = 'mutation ($columnVals: JSON!) { change_multiple_column_values (board_id:' + channelInfo.boardId +
+                ', item_id:' + channelInfo.itemId +
+                ', column_values:$columnVals) { name id } }';
+            let vars = {
+                "columnVals" : JSON.stringify({
+                    [DATE_OF_LAST_VIDEO_COL] : newDate,
+                    [SUB_COL] : channelInfo.subscriberCount,
+                    [VIEWS_COL] : channelInfo.viewCount,
+                    [NUM_VIDEOS_COL] : channelInfo.videoCount,
+                    [VIDS_CAP_COL] : vidsCaped,
+                    [TOT_SEC_COL] : channelInfo.secs,
+                    [SEC_CAP_COL] : secCaped
+                })
+            };
+            const headers = {
+                headers: {
+                    Authorization: MONDAY_API_KEY
+                }
+            };
+            const url = 'https://api.monday.com/v2';
+
+            const body = {
+                query: query,
+                variables: vars
+            };
+
+            this.postData(url, body, headers)
+                .then(result => {
+                    console.log(result);
+                    this.checkResponse(JSON.stringify(result, null, 2));
+                    this.updateStatus(res, channelInfo, "update");
+                })
+                .catch(error => {
+                    console.log(error);
+                    res.status(500).send(error.message);
+                });
+        });
     }
 
     async markDeleted(res, channelInfo) {

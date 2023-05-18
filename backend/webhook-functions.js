@@ -22,11 +22,19 @@ class WebhookFunctions {
         return getChannelInfo.updateChannelInfo(res, rowInfo)
             .then(info => {
                 var info = info;
-                //console.log("The info: " + JSON.stringify(info));
+                console.log("The info: " + JSON.stringify(info));
                 if (info.status !== undefined) {
                     console.log("There was an error :( " + info.status);
-                    updateMonday.updateStatus(res, row, "error");
-                    res.status(500).send(rowInfo.error);
+                    if (info.status === "deleted") {
+                        console.log("This channel has been deleted.");
+                        updateMonday.markDeleted(res, rowInfo);
+                    } else if (info.status === "There is no content on the channel") {
+                        console.log("The channel has no content.");
+                        updateMonday.updateStatus(res, rowInfo, "no content");
+                    } else {
+                        updateMonday.updateStatus(res, rowInfo, "error");
+                        res.status(500).send(rowInfo.error);
+                    }
                     return "";
                 }
 

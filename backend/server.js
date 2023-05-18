@@ -143,12 +143,10 @@ app.post("/webhook-endpoint", function(req, res) {
                 } else {
                     webhook.doMondayYoutube(res, rowInfo)
                         .then( info => {
-                            console.log("The info", info);
-                            if (info.status !== "Up to date") {
-                                //TODO: add to the sheet
-
-                                //TODO: update monday
-                                //updateMonday.updateBoardPostAudit(res, info);
+                            //console.log("The info", info);
+                            if (info.status !== "Up to date" && info !== "") {
+                                makeSheet.fillSheetWebhook(info.sheetId, info.vidInfo);
+                                updateMonday.updateBoardPostAudit(res, info);
                             }
                         });
                 }
