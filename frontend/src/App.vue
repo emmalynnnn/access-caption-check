@@ -17,6 +17,8 @@
         <h2>{{name}}</h2>
         <p>{{this.channelId}}</p>
 
+        <p v-if="sheetId"><a :href="sheetLink">Click here</a> to view the report as a google sheet.</p>
+
         <ul>
           <li>Number of videos: <strong>{{numVid}}</strong></li>
           <li>Number captioned: <strong>{{numCap}} ({{percentCap}}%)</strong></li>
@@ -306,6 +308,9 @@ export default {
         }
       }
       return toReturn;
+    },
+    sheetLink() {
+      return `https://docs.google.com/spreadsheets/d/${this.sheetId}/`;
     }
   }
 
