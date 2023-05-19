@@ -27,10 +27,10 @@ specified box.
    
    <img src="docs/demo2.png"/>
    
-     * A new input box will appear with the label "Folder". Please select the outer folder you wish
+     * A new input box will appear with the label `Folder`. Please select the outer folder you wish
      to store the google sheet in.
      * Once you select the outer folder, another new input box will appear labelled 
-     "Sub-folder". Please select the subfolder you would like to store the google sheet in.
+     `Sub-folder`. Please select the subfolder you would like to store the google sheet in.
      * If a folder you're looking for is not available, please contact your developer.
      Coming soon: a more dynamic folder selection option, that will pull options directly
      from Google Drive.
@@ -43,7 +43,7 @@ next page.
 
 <img src="docs/demo3.png"/>
 
-6. To download the report as HTML, scroll to the bottom of the page and select "Download".
+6. To download the report as HTML, scroll to the bottom of the page and select `Download`.
 If google sheets was selected as the output, the sheet will have been automatically
 created and is accessible in the folder you specified and at the link at the top of
 the page.

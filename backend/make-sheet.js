@@ -61,8 +61,9 @@ class MakeSheet {
                 continue;
             }
 
-            console.log("Adding row for " + info[i].title);
-            let linkTitle = '=HYPERLINK("' + info[i].url + '", "' + info[i].title + '")';
+            //console.log("Adding row for " + info[i].title);
+            let vidTitle = (info[i].title).replace(/["]+/g, '');
+            let linkTitle = '=HYPERLINK("' + info[i].url + '", "' + vidTitle + '")';
             values.push([linkTitle, info[i].date, info[i].dur, info[i].cap, info[i].views, info[i].profile])
         }
 
@@ -91,12 +92,12 @@ class MakeSheet {
 
     async fillSheetWebhook(fileId, info) {
 
-        let jwtClient = this.authorizeGoogle();
-        let sheets = google.sheets({version: 'v4', auth: jwtClient});
+        //let jwtClient = this.authorizeGoogle();
+        //let sheets = google.sheets({version: 'v4', auth: jwtClient});
 
         let values = [];
 
-        Promise.all(info).then((vidInfo) => {
+        return Promise.all(info).then((vidInfo) => {
             //console.log("Filling in the sheet with " + vidInfo)
             for (let i = 0; i < info.length; i++) {
                 if (vidInfo[i] === 'nope') {
@@ -104,7 +105,8 @@ class MakeSheet {
                 }
 
                 //console.log("Adding row for " + vidInfo[i].title);
-                let linkTitle = '=HYPERLINK("' + vidInfo[i].url + '", "' + vidInfo[i].title + '")';
+                let vidTitle = (vidInfo[i].title).replace(/["]+/g, '');
+                let linkTitle = '=HYPERLINK("' + vidInfo[i].url + '", "' + vidTitle + '")';
                 values.push([linkTitle, vidInfo[i].date, vidInfo[i].dur, vidInfo[i].cap, vidInfo[i].views, vidInfo[i].profile]);
             }
 
@@ -115,6 +117,11 @@ class MakeSheet {
             let range = "Sheet1!A" + (2) + ":F" + (2);
 
             console.log("Now we're filling in the sheet");
+            let jwtClient = this.authorizeGoogle();
+            let sheets = google.sheets({version: 'v4', auth: jwtClient});
+
+            let result = {status: "working"};
+
             sheets.spreadsheets.values.append({
                 spreadsheetId: fileId,
                 range: range,
@@ -123,12 +130,17 @@ class MakeSheet {
             }, function (err, response) {
                 if (err) {
                     console.log('The API returned an error. ' + err);
+                    //return {error: err.message};
+                    result = {error: err.message};
                 } else {
+                    result = {status: "successful"};
                 }
             });
+            return result;
         })
             .catch(err => {
                 console.log(`There was an error filling in the sheet: ${err.message}`);
+                return {error: err.message};
             });
 
     }

@@ -66,7 +66,7 @@ app.post("/get-vid-info", function(req, res) {
 app.post("/fill-sheet", function(req, res) {
     console.log("---------------- /fill-sheet ----------------");
 
-    console.log("The vid info: " + JSON.stringify(req.body.vidInfo));
+    //console.log("The vid info: " + JSON.stringify(req.body.vidInfo));
 
     makeSheet.fillSheet(req.body.sheetId, req.body.vidInfo)
         .then( results => {
@@ -82,7 +82,6 @@ app.post("/fill-sheet", function(req, res) {
 
 app.post("/create-sheet", function (req, res) {
     console.log("---------------- /create-sheet ----------------");
-    console.log("Creating a sheet")
 
     let name = req.body.name;
     let foldName = req.body.foldName;
@@ -127,6 +126,7 @@ app.post("/create-sheet", function (req, res) {
 
 app.post("/webhook-endpoint", function(req, res) {
     res.status(200).send(req.body);
+    console.log("---------------- /webhook-endpoint ----------------");
 
     if (req.body.hasOwnProperty("event")) {
         let itemId = req.body.event.pulseId;
@@ -140,16 +140,25 @@ app.post("/webhook-endpoint", function(req, res) {
                     console.log("There was an error getting the row info :(");
                     console.log(rowInfo.error);
                     updateMonday.updateStatus(res, rowInfo, "error");
-                    //res.status(500).send(rowInfo.error);
+                    console.log("end ---------------- /webhook-endpoint ----------------");
                 } else {
                     webhook.doMondayYoutube(res, rowInfo)
                         .then( info => {
                             //console.log("The info", info);
                             if (info.status === "folder id is invalid") {
                                 updateMonday.updateStatus(res, info, "error");
+                                console.log("end ---------------- /webhook-endpoint ----------------");
                             } else if (info.status !== "Up to date" && info !== "") {
-                                makeSheet.fillSheetWebhook(info.sheetId, info.vidInfo);
-                                updateMonday.updateBoardPostAudit(res, info);
+                                makeSheet.fillSheetWebhook(info.sheetId, info.vidInfo)
+                                    .then(response => {
+                                        console.log("Response", response);
+                                        if (response.error !== undefined) {
+                                            updateMonday.updateStatus(res, info, "error");
+                                        } else {
+                                            updateMonday.updateBoardPostAudit(res, info);
+                                        }
+                                        console.log("end ---------------- /webhook-endpoint ----------------");
+                                    });
                             }
                         });
                 }

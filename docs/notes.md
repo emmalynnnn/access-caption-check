@@ -164,16 +164,36 @@ Create a trigger in Monday that will kick off the process to run a report that w
 
 ### 5.18.23
 * Finished implementing webhook feature
+* Added usage docs
+
+### 5.19.23
+* Fixed strange README formatting
+* Added licence
+* Troubleshooting ECONNRESET error
+  * I think it must be something to do with channels that have a lot of videos
+  * Observed on `Empower Teaching` (318) and `College of Humanities...` (277) with webhook
+  * Only observed when the channel needs a full audit
+  * Not observed for `College of Humanities...` using GUI - even with creating sheet
+  * ECONNRESET is now being caught and marked as an error so it will not crash the server anymore - still not sure how to fix it tho
+  * Sheet is created but filling it in fails
+    * But only from the webhook for whatever reason- it works with the GUI
+  * Not observed for `Ecology Center` with 130 videos
+  * Observed for `College of Engineering` with 180 videos
+  * Observed for `Campus Recreation` with 161 videos
+  * One of the videos: `Promise { <rejected> [AxiosError] }`
+    * That could be the issue because `Promise.all` will fail if any promise rejects
+  * With `Campus Recreation`:
+    * Failed for 77 videos cause of ECONNRESET error
+* Fixed double quote sheets formula parsing error
 
 ## TODO
-* Table formatting
+* ECONNRESET
+* Quota limit testing
 * Bulk testing
-* Testing and exception handling
-* Quota limit issue
-* AxiosError: read ECONNRESET??
 
 Next version:
 * Google drive folder selection
+* Table formatting
 
 Dependencies:
 * Vue

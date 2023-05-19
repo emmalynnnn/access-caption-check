@@ -115,6 +115,10 @@ class Auditor {
 
                 //console.log("info: " + JSON.stringify(info));
                 return info;
+            })
+            .catch( err => {
+                console.log("This error was caught while getting the vid info", err.message);
+                return "nope";
             });
     }
 
