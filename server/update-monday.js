@@ -13,7 +13,7 @@ const TOT_SEC_COL = "numbers6";
 const SEC_CAP_COL = "numbers5";
 
 const axios = require('axios');
-const converter = require("../frontend/src/assets/dur-iso");
+const converter = require("./dur-iso");
 
 class UpdateMonday {
 

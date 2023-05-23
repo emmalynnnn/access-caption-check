@@ -2,7 +2,7 @@ const axios = require("axios");
 require('dotenv').config();
 const YOUTUBE_API_KEY = process.env.YOUTUBE_API;
 const VIDS_ON_PAGE = 50;
-const converter = require("../frontend/src/assets/dur-iso");
+const converter = require("./dur-iso");
 
 class Auditor {
 

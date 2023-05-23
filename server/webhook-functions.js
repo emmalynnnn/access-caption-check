@@ -6,7 +6,7 @@ const Auditor = require("./auditor");
 const auditor = new Auditor();
 const MakeSheet = require("./make-sheet");
 const makeSheet = new MakeSheet();
-const converter = require("../frontend/src/assets/dur-iso");
+const converter = require("./dur-iso");
 
 const MOST_RECENT_VID_COL = "date";
 const NUM_CAP_COL = "numbers4";
