@@ -33,9 +33,6 @@ class MakeSheet {
 
         console.log("the id in here", response.data.spreadsheetId);
 
-        //const MakeSheet = require("./make-sheet");
-        //const makeSheet = new MakeSheet();
-
         console.log(`Moving ${response.data.spreadsheetId} into ${folderId}`);
         let moveResult = await this.moveSheet(response.data.spreadsheetId, folderId, jwtClient);
         if (moveResult !== undefined) {

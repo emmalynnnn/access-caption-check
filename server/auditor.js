@@ -82,7 +82,7 @@ class Auditor {
 
     }
 
-    async getVidInfo(id) {
+    async getVidInfo(id, tries=0) {
         let url = "https://www.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails%2CliveStreamingDetails%2Cstatistics&" +
             "id=" + id + "&key=" + YOUTUBE_API_KEY;
         return axios.get(url)
@@ -118,6 +118,12 @@ class Auditor {
             })
             .catch( err => {
                 console.log("This error was caught while getting the vid info", err.message);
+                if (tries < 3) {
+                    console.log(`${id}: Trying again - ${tries}`)
+                    return this.getVidInfo(id, tries + 1)
+                } else {
+
+                }
                 return "nope";
             });
     }

@@ -174,7 +174,8 @@ Create a trigger in Monday that will kick off the process to run a report that w
   * Observed on `Empower Teaching` (318) and `College of Humanities...` (277) with webhook
   * Only observed when the channel needs a full audit
   * Not observed for `College of Humanities...` using GUI - even with creating sheet
-  * ECONNRESET is now being caught and marked as an error so it will not crash the server anymore - still not sure how to fix it tho
+  * ECONNRESET is now being caught and marked as an error so it will not crash the server anymore - 
+  still not sure how to fix it tho
   * Sheet is created but filling it in fails
     * But only from the webhook for whatever reason- it works with the GUI
   * Not observed for `Ecology Center` with 130 videos
@@ -186,10 +187,18 @@ Create a trigger in Monday that will kick off the process to run a report that w
     * Failed for 77 videos cause of ECONNRESET error
 * Fixed double quote sheets formula parsing error
 
+### 5.23.23
+* Still working on ECONNRESET error
+  * Tried allowing it to try again which seems to help but it doesn't solve the issue
+  * This might be helpful: https://dev.to/karataev/handling-a-lot-of-requests-in-javascript-with-promises-1kbb
+    * "The point is that Node can't handle a lot of connections at the same time and we need to rethink the solution."
+    * Can I somehow force the function to get the vid info one at a time, and not concurrently in a for loop??? Hmmm
+
 ## TODO
 * ECONNRESET
 * Quota limit testing
 * Bulk testing
+* Negative uncaptioned seconds????
 
 Next version:
 * Google drive folder selection

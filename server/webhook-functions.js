@@ -55,46 +55,47 @@ class WebhookFunctions {
                         return info;
                     }
                     return makeSheet.makeSheet(info.name, info.foldId, true)
-            .then(id => {
-                console.log("here is the sheet id! We have it already!!!", id);
-                if (id === "folder id is invalid") {
-                    info.status = "folder id is invalid";
-                    return info;
-                }
-                info.sheetId = id;
-                return auditor.auditChannel(info.channelId, "Sheets", "", "", "ID found", info)
-            .then( results => {
-                //console.log(results);
-                //console.log("To audit: " + results.vidIds);
-
-                let vidInfo = [];
-                for (let i = 0; i < results.vidIds.length; i++) {
-                    vidInfo.push(auditor.getVidInfo(results.vidIds[i])
-                        .then( result => {
-                            let vidSec = converter.convertToSecond(result.rawDur);
-                            info.totSec += vidSec;
-
-                            if (result.cap === "Yes") {
-                                info.numCap++;
-                                info.secCap += vidSec;
+                        .then(id => {
+                            //console.log("here is the sheet id! We have it already!!!", id);
+                            if (id === "folder id is invalid") {
+                                info.status = "folder id is invalid";
+                                return info;
                             }
+                            info.sheetId = id;
+                            return auditor.auditChannel(info.channelId, "Sheets", "", "", "ID found", info)
+                                .then(results => {
+                                    //console.log(results);
+                                    //console.log("To audit: " + results.vidIds);
 
-                            //console.log("result", result);
-                            return result;
-                        }));
-                }
-                info.vidInfo = vidInfo;
-                //console.log("The info in here", info);
-                return info;
-                //return res.status(200).json({result: results});
-            }).catch( err => {
-                console.log(err);
-                //return res.status(500).json({result: "Error: channel audit failed"});
-            });
-            });
+                                    let vidInfo = [];
+                                    for (let i = 0; i < results.vidIds.length; i++) {
+                                        vidInfo.push(auditor.getVidInfo(results.vidIds[i])
+                                            .then(result => {
+                                                let vidSec = converter.convertToSecond(result.rawDur);
+                                                info.totSec += vidSec;
+
+                                                if (result.cap === "Yes") {
+                                                    info.numCap++;
+                                                    info.secCap += vidSec;
+                                                }
+
+                                                //console.log("result", result);
+                                                return result;
+                                            }));
+                                    }
+                                    info.vidInfo = vidInfo;
+                                    //console.log("The info in here", info);
+                                    return info;
+                                    //return res.status(200).json({result: results});
+                                }).catch(err => {
+                                    console.log(err);
+                                    //return res.status(500).json({result: "Error: channel audit failed"});
+                                });
+                        });
                 }
             });
     }
+
 
     async getChannelId(res, itemId, boardId) {
         //console.log("Getting the channel Id")
