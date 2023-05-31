@@ -1,13 +1,13 @@
-# YTCA-USU
+# YouTube Caption Check Tool
 * Developed by Emma Lynn (a02391851@usu.edu)
 * Supervised by Christopher Phillips, Electronic & Information Technology Accessibility Coordinator (christopher.phillips@usu.edu)
 * On request from Christopher Phillips, Electronic & Information Technology Accessibility Coordinator & Megan Spackman, Caption Program Coordinator
 
 
-YTCA-USU is a tool developed by Utah State University to audit University affiliated YouTube channels, checking for captions
+The YouTube Caption Check Tool is a tool developed by Utah State University to audit University affiliated YouTube channels, checking for captions
 and other information.
 
-YTCA-USU is currently hosted on AWS and is accessible here: ____
+The YouTube Caption Check Tool is currently hosted on AWS and is accessible here: ____
 
 ## Usage
 
@@ -78,7 +78,7 @@ If something behaves unexpectedly, or you run into a problem with the applicatio
 please let me know.
 
 Send bug reports to a02391851@usu.edu with the subject line 
-"Bug Report - YTCA-USU".
+"Bug Report - YouTube Caption Check".
 
 Please include:
 * What you expected to happen

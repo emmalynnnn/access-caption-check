@@ -86,7 +86,7 @@
       <button type="submit" class="btn btn__primary btn__lg">Submit</button>
     </div>
   </form>
-  <p>Please note that if the channel has a large amount of content, YTCA-USU may take a moment to respond after Submit is selected.
+  <p>Please note that if the channel has a large amount of content, the tool may take a moment to respond after Submit is selected.
   If sending a report to Google Sheets, the videos results may also take a moment to load.</p>
 </template>
 

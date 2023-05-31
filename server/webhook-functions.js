@@ -14,6 +14,8 @@ const SEC_COL = "numbers6";
 const SEC_CAP_COL = "numbers5";
 const REPORT_COL = "link1";
 
+const VID_CHUNK_SIZE = 50;
+
 const MONDAY_API_KEY = process.env.MONDAY_API;
 
 class WebhookFunctions {
@@ -68,8 +70,20 @@ class WebhookFunctions {
                                     //console.log("To audit: " + results.vidIds);
 
                                     let vidInfo = [];
+
+                                    let vidChunks = [[]];
+                                    let chunkIndex = 0;
+
                                     for (let i = 0; i < results.vidIds.length; i++) {
-                                        vidInfo.push(auditor.getVidInfo(results.vidIds[i])
+                                        if (vidChunks[chunkIndex].length >= VID_CHUNK_SIZE) {
+                                            chunkIndex++;
+                                            vidChunks.push([]);
+                                        }
+                                        vidChunks[chunkIndex].push(results.vidIds[0]);
+                                    }
+
+                                    for (let i = 0; i < vidChunks.length; i++) {
+                                        /*vidInfo.push(auditor.getVidInfo(results.vidIds[i])
                                             .then(result => {
                                                 let vidSec = converter.convertToSecond(result.rawDur);
                                                 info.totSec += vidSec;
@@ -81,10 +95,12 @@ class WebhookFunctions {
 
                                                 //console.log("result", result);
                                                 return result;
-                                            }));
+                                            }));*/
+                                        vidInfo.concat(this.getChunkOfVids(vidChunks[i]));
                                     }
                                     info.vidInfo = vidInfo;
-                                    //console.log("The info in here", info);
+                                    console.log("The info in here", info);
+                                    throw Error;
                                     return info;
                                     //return res.status(200).json({result: results});
                                 }).catch(err => {
@@ -94,6 +110,30 @@ class WebhookFunctions {
                         });
                 }
             });
+    }
+
+    async getChunkOfVids(vidIds) {
+        let vidInfo = [];
+        let totSec = 0;
+        let numCap = 0;
+        let secCap = 0;
+
+        for (let i = 0; i < vidIds.length; i++) {
+            vidInfo.push(auditor.getVidInfo(vidIds[i])
+                .then(result => {
+                    let vidSec = converter.convertToSecond(result.rawDur);
+                    totSec += vidSec;
+
+                    if (result.cap === "Yes") {
+                        numCap++;
+                        secCap += vidSec;
+                    }
+
+                    //console.log("result", result);
+                    return result;
+                }));
+        }
+        return {vidInfo: vidInfo, totSec: totSec, numCap: numCap, secCap: secCap};
     }
 
 

@@ -194,6 +194,15 @@ Create a trigger in Monday that will kick off the process to run a report that w
     * "The point is that Node can't handle a lot of connections at the same time and we need to rethink the solution."
     * Can I somehow force the function to get the vid info one at a time, and not concurrently in a for loop??? Hmmm
 
+### 5.31.23
+* Changing name to YouTube Caption Check Tool
+* Working more on ECONNRESET error
+  * Not observed on `Campus Rec`
+  * Initially observed on `College of Humanities` but caught successfully by retry
+  * Completely failed on `Empower Teaching`- no courses found
+  * Tried again with `College of Humanities` and mostly failed
+* 
+
 ## TODO
 * ECONNRESET
 * Quota limit testing

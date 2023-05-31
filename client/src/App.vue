@@ -1,18 +1,17 @@
 <template>
   <div id="app">
     <div v-if="noData">
-      <h1>YouTube Caption Auditor (YTCA-USU)</h1>
+      <h1>YouTube Caption Check Tool</h1>
       <p>Built and currently maintained by Emma Lynn (a02391851@usu.edu).</p>
-      <p>Based off Terrill Thompson (University of Washington)'s <a href="https://github.com/terrill/YTCA">YTCA</a>.</p>
-      <p>Use the following form to generate a report regarding the indicated YouTube channel(s). For YTCA-USU source
-        code and documentation, see <a href="https://github.com/emmalynnnn/YTCA-USU">YTCA-USU on GitHub</a>.</p>
+      <p>Use the following form to generate a report regarding the indicated YouTube channel(s). For YouTube Caption Check source
+        code and documentation, see <a href="https://github.com/emmalynnnn/access-caption-check">YouTube Caption Check on GitHub</a>.</p>
       <channel-info-form @form-submitted="auditTheChannel"></channel-info-form>
 
     </div>
 
     <div v-else>
       <div id="toDownload">
-        <h1>YouTube Caption Auditor (YTCA) Report</h1>
+        <h1>YouTube Caption Check Report</h1>
         <p><strong>{{currDate}}</strong></p>
         <h2>{{name}}</h2>
         <p>{{this.channelId}}</p>
