@@ -79,7 +79,7 @@ class WebhookFunctions {
                                             chunkIndex++;
                                             vidChunks.push([]);
                                         }
-                                        vidChunks[chunkIndex].push(results.vidIds[0]);
+                                        vidChunks[chunkIndex].push(results.vidIds[i]);
                                     }
 
                                     for (let i = 0; i < vidChunks.length; i++) {
@@ -114,6 +114,7 @@ class WebhookFunctions {
     }
 
     async getChunkOfVids(vidIds) {
+        console.log("These vidIds: " + vidIds);
         let vidInfo = [];
         /*let totSec = 0;
         let numCap = 0;
@@ -130,7 +131,7 @@ class WebhookFunctions {
                         secCap += vidSec;
                     }*/
 
-                    console.log("result", result);
+                    //console.log("result", result);
                     return result;
                 }));
         }

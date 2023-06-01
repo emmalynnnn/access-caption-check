@@ -1,6 +1,8 @@
 const {google} = require("googleapis");
 const privatekey = require("./service_account.json");
 
+const VID_CHUNK_SIZE = 50;
+
 class MakeSheet {
     async makeSheet(name, foldNameOrId, isFoldId = false) {
         console.log("Creating a sheet")
@@ -87,12 +89,84 @@ class MakeSheet {
 
     }
 
+    async addChunk(fileId, info, sheets) {
+        let values = [];
+
+        return Promise.all(info).then((vidInfo) => {
+            //console.log("Filling in the sheet with " + vidInfo)
+            for (let i = 0; i < info.length; i++) {
+                if (vidInfo[i] === 'nope') {
+                    continue;
+                }
+
+                //console.log("Adding row for " + vidInfo[i].title);
+                let vidTitle = (vidInfo[i].title).replace(/["]+/g, '');
+                let linkTitle = '=HYPERLINK("' + vidInfo[i].url + '", "' + vidTitle + '")';
+                values.push([linkTitle, vidInfo[i].date, vidInfo[i].dur, vidInfo[i].cap, vidInfo[i].views, vidInfo[i].profile]);
+            }
+
+            const resource = {
+                values,
+            };
+
+            let range = "Sheet1!A" + (2) + ":F" + (2);
+
+            console.log("Now we're filling in the sheet with this chunk");
+
+            let result = {status: "working"};
+
+            sheets.spreadsheets.values.append({
+                spreadsheetId: fileId,
+                range: range,
+                valueInputOption: "user_entered",
+                resource: resource
+            }, function (err, response) {
+                if (err) {
+                    console.log('The API returned an error. ' + err);
+                    //return {error: err.message};
+                    result = {error: err.message};
+                } else {
+                    result = {status: "successful"};
+                }
+            });
+            return result;
+        })
+            .catch(err => {
+                console.log(`There was an error filling in the sheet: ${err.message}`);
+                return {error: err.message};
+            });
+    }
+
     async fillSheetWebhook(fileId, info) {
 
-        //let jwtClient = this.authorizeGoogle();
-        //let sheets = google.sheets({version: 'v4', auth: jwtClient});
+        let jwtClient = this.authorizeGoogle();
+        let sheets = google.sheets({version: 'v4', auth: jwtClient});
 
-        let values = [];
+        let vidChunks = [[]];
+        let chunkIndex = 0;
+
+        for (let i = 0; i < info.length; i++) {
+            if (vidChunks[chunkIndex].length >= VID_CHUNK_SIZE) {
+                chunkIndex++;
+                vidChunks.push([]);
+            }
+            vidChunks[chunkIndex].push(info[i]);
+        }
+
+        for (let i = 0; i < vidChunks.length; i++) {
+            console.log("Sending this chunk of vids to the sheet");
+            this.addChunk(fileId, info, sheets)
+                .then(result => {
+                    console.log("Anddd we're done: " + JSON.stringify(result));
+                })
+                .catch(err => {
+                    return {error: err};
+                })
+        }
+
+        return {status: "success"}
+
+        /*let values = [];
 
         return Promise.all(info).then((vidInfo) => {
             //console.log("Filling in the sheet with " + vidInfo)
@@ -138,7 +212,7 @@ class MakeSheet {
             .catch(err => {
                 console.log(`There was an error filling in the sheet: ${err.message}`);
                 return {error: err.message};
-            });
+            });*/
 
     }
 

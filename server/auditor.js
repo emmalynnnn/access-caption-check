@@ -4,6 +4,8 @@ const YOUTUBE_API_KEY = process.env.YOUTUBE_API;
 const VIDS_ON_PAGE = 50;
 const converter = require("./dur-iso");
 
+const ECONNRESET_TRIES = 3;
+
 class Auditor {
 
     async postData(url, data, headers) {
@@ -118,11 +120,11 @@ class Auditor {
             })
             .catch( err => {
                 console.log("This error was caught while getting the vid info", err.message);
-                if (tries < 3) {
+                if (err.message === "read ECONNRESET" && tries < ECONNRESET_TRIES) {
                     console.log(`${id}: Trying again - ${tries}`)
                     return this.getVidInfo(id, tries + 1)
-                } else {
-
+                } else if (err.message === "read ECONNRESET") {
+                    console.log("Out of retries for ECONNRESET")
                 }
                 return "nope";
             });

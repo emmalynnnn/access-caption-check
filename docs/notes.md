@@ -201,7 +201,16 @@ Create a trigger in Monday that will kick off the process to run a report that w
   * Initially observed on `College of Humanities` but caught successfully by retry
   * Completely failed on `Empower Teaching`- no courses found
   * Tried again with `College of Humanities` and mostly failed
-* 
+
+### 6.1.23
+* Prepped a demo for Megan
+  * Rescheduled
+* Worked more on filtering requests
+  * Tried on Campus Recreation, only got 43 videos - still ECONNRESET
+  * Tried again, only got 21
+* I wonder if I also need to filter resolving the promises
+* Tried to fix that too and still only got 75 videos
+* It seems to be doing a little better- but still not consistently good :(
 
 ## TODO
 * ECONNRESET
