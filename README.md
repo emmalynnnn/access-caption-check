@@ -7,13 +7,44 @@
 The YouTube Caption Check Tool is a tool developed by Utah State University to audit University affiliated YouTube channels, checking for captions
 and other information.
 
-The YouTube Caption Check Tool is currently hosted on AWS and is accessible here: ____
-
 ## Usage
+
+### Run the application locally:
+* On GitHub, click the green Code button. In the dropdown, click Download ZIP.
+* Unwrap the ZIP file.
+* Open your command line application (`Terminal` on Mac or `PowerShell` on Windows).
+* Navigate to the downloaded project with the following command:
+```shell
+cd Downloads/access-caption-check-master
+```
+* Open a new tab or window in your terminal. 
+Make sure that the new tab/window is still open to the project directory.
+* In one window, run the following command:
+```shell
+cd client
+```
+```shell
+yarn install
+```
+```shell
+yarn serve
+```
+* In the other window run the following commands:
+```shell
+cd server
+```
+```shell
+node server.js
+```
+* Do not close the terminal window.
+* Navigate to `localhost:8080` in your web browser.
+* When you're done using the application, hit `CTRL + C` in each terminal window.
+* To run the program again later, repeat all steps except for downloading the project and running `yarn install`.
+
 
 ### As a web application:
 
-1. Navigate to [the tool](___).
+1. Navigate to the tool.
 
 <img src="docs/demo1.png"/>
 
