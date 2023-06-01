@@ -19,7 +19,7 @@ const VID_CHUNK_SIZE = 50;
 const MONDAY_API_KEY = process.env.MONDAY_API;
 
 class WebhookFunctions {
-    doMondayYoutube(res, rowInfo) {
+    async doMondayYoutube(res, rowInfo) {
         //let oldMostRecentVid = rowInfo.mostRecentVid;
         return getChannelInfo.updateChannelInfo(res, rowInfo)
             .then(info => {
@@ -65,7 +65,7 @@ class WebhookFunctions {
                             }
                             info.sheetId = id;
                             return auditor.auditChannel(info.channelId, "Sheets", "", "", "ID found", info)
-                                .then(results => {
+                                .then(async(results) => {
                                     //console.log(results);
                                     //console.log("To audit: " + results.vidIds);
 
@@ -96,11 +96,12 @@ class WebhookFunctions {
                                                 //console.log("result", result);
                                                 return result;
                                             }));*/
-                                        vidInfo.concat(this.getChunkOfVids(vidChunks[i]));
+                                        let littleInfo = await this.getChunkOfVids(vidChunks[i]);
+                                        console.log(littleInfo);
+                                        vidInfo = vidInfo.concat(littleInfo.vidInfo);
                                     }
                                     info.vidInfo = vidInfo;
                                     console.log("The info in here", info);
-                                    throw Error;
                                     return info;
                                     //return res.status(200).json({result: results});
                                 }).catch(err => {
@@ -114,26 +115,26 @@ class WebhookFunctions {
 
     async getChunkOfVids(vidIds) {
         let vidInfo = [];
-        let totSec = 0;
+        /*let totSec = 0;
         let numCap = 0;
-        let secCap = 0;
+        let secCap = 0;*/
 
         for (let i = 0; i < vidIds.length; i++) {
             vidInfo.push(auditor.getVidInfo(vidIds[i])
                 .then(result => {
-                    let vidSec = converter.convertToSecond(result.rawDur);
+                    /*let vidSec = converter.convertToSecond(result.rawDur);
                     totSec += vidSec;
 
                     if (result.cap === "Yes") {
                         numCap++;
                         secCap += vidSec;
-                    }
+                    }*/
 
-                    //console.log("result", result);
+                    console.log("result", result);
                     return result;
                 }));
         }
-        return {vidInfo: vidInfo, totSec: totSec, numCap: numCap, secCap: secCap};
+        return {vidInfo: vidInfo/*, totSec: totSec, numCap: numCap, secCap: secCap*/};
     }
 
 
