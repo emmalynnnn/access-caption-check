@@ -4,7 +4,7 @@ const YOUTUBE_API_KEY = process.env.YOUTUBE_API;
 const VIDS_ON_PAGE = 50;
 const converter = require("./dur-iso");
 
-const ECONNRESET_TRIES = 3;
+const ECONNRESET_TRIES = 0;
 
 class Auditor {
 

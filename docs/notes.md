@@ -168,7 +168,7 @@ Create a trigger in Monday that will kick off the process to run a report that w
 
 ### 5.19.23
 * Fixed strange README formatting
-* Added licence
+* Added license
 * Troubleshooting ECONNRESET error
   * I think it must be something to do with channels that have a lot of videos
   * Observed on `Empower Teaching` (318) and `College of Humanities...` (277) with webhook
@@ -211,6 +211,10 @@ Create a trigger in Monday that will kick off the process to run a report that w
 * I wonder if I also need to filter resolving the promises
 * Tried to fix that too and still only got 75 videos
 * It seems to be doing a little better- but still not consistently good :(
+
+### 6.5.23
+* Tried to follow this instructions [here](https://stackoverflow.com/questions/53340878/econnreset-in-express-js-node-js-with-multiple-requests) to fix ECONNRESET but they didn't work
+* 
 
 ## TODO
 * ECONNRESET
