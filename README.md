@@ -97,11 +97,11 @@ contains no content.
 changes to `Deleted`, the channel has been deleted and is no longer accessible publicly
 on YouTube. If you are sure the channel exists, check to ensure that the channel ID is
 correct.
-* The `Update now?` column may to `Error` in the following situations:
+* The `Update now?` status may change to the `Error` status in the following situations:
   * There is no channel id specified in the `Channel ID` column
   * There is not a link to a folder listed in the `Reports` column
   * The link to the folder listed in the `Reports` column is invalid
-  * Another error has occurred. If not of the above are applicable and you are unsure
+  * Another error has occurred. If none of the above are applicable and you are unsure
   why the error occurred, please follow the Bug Report instructions below.
 
 ## Bug Reports

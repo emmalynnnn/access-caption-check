@@ -218,14 +218,18 @@ Create a trigger in Monday that will kick off the process to run a report that w
   * Carter thought I could try adding a wait between requests
   * Or maybe try axios interceptors
 * Adding the throttle works!!
-* 
+* Fixed the negative uncaptioned seconds issue
+  * I think that maybe time for videos that were originally live streams got left out of the original count
 
 ## TODO
-* ECONNRESET
+
+On this branch:
+* Quota limit rotation and error catching
+
+On prep for deployment branch:
 * Extension goes on forever????
 * Quota limit testing
 * Bulk testing
-* Negative uncaptioned seconds????
 * Clean up
 
 Next version:

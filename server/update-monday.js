@@ -79,12 +79,18 @@ class UpdateMonday {
 
             let vidsCaped = 0;
             let secCaped = 0;
+            let totSec = 0;
             for (let i = 0; i < vidInfo.length; i++) {
+                totSec += converter.convertToSecond(vidInfo[i].rawDur);
                 if (vidInfo[i].cap === "Yes") {
                     vidsCaped++;
                     secCaped += converter.convertToSecond(vidInfo[i].rawDur);
                 }
             }
+
+            console.log("The number of vids captioned: " + vidsCaped);
+            console.log("The number of seconds captioned: " + secCaped);
+            console.log("The number of seconds total: " + totSec);
 
             let newDate = channelInfo.mostRecentVideo.date.substring(0, channelInfo.mostRecentVideo.date.indexOf("T"));
 
@@ -98,7 +104,7 @@ class UpdateMonday {
                     [VIEWS_COL] : channelInfo.viewCount,
                     [NUM_VIDEOS_COL] : channelInfo.videoCount,
                     [VIDS_CAP_COL] : vidsCaped,
-                    [TOT_SEC_COL] : channelInfo.secs,
+                    [TOT_SEC_COL] : totSec,
                     [SEC_CAP_COL] : secCaped
                 })
             };
