@@ -34,6 +34,7 @@ class UpdateMonday {
     }
 
     async updateBoard(res, channelInfo) {
+        console.log("Updating board")
 
         let newDate = channelInfo.mostRecentVideo.date.substring(0, channelInfo.mostRecentVideo.date.indexOf("T"));
 
@@ -163,7 +164,7 @@ class UpdateMonday {
 
     async updateStatus(res, channelInfo, type) {
         console.log('marking updated: ' + type);
-        console.log(channelInfo);
+        //console.log(channelInfo);
         let newStatus = "";
         if (type === "update") {
             newStatus = "Done";
@@ -173,7 +174,7 @@ class UpdateMonday {
             newStatus = "No Content";
         }
         const currentDate = new Date().toJSON().slice(0, 10);
-        console.log("New date " + currentDate);
+        //console.log("New date " + currentDate);
         let query = 'mutation ($columnVals: JSON!) { change_multiple_column_values (board_id:' + channelInfo.boardId +
             ', item_id:' + channelInfo.itemId +
             ', column_values:$columnVals) { name id } }';

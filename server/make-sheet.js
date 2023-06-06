@@ -33,9 +33,7 @@ class MakeSheet {
             fields: 'spreadsheetId',
         });
 
-        console.log("the id in here", response.data.spreadsheetId);
-
-        console.log(`Moving ${response.data.spreadsheetId} into ${folderId}`);
+        //console.log(`Moving ${response.data.spreadsheetId} into ${folderId}`);
         let moveResult = await this.moveSheet(response.data.spreadsheetId, folderId, jwtClient);
         if (moveResult !== undefined) {
             return "folder id is invalid";
@@ -111,7 +109,7 @@ class MakeSheet {
 
             let range = "Sheet1!A" + (2) + ":F" + (2);
 
-            console.log("Now we're filling in the sheet with this chunk");
+            //console.log("Now we're filling in the sheet with this chunk");
 
             let result = {status: "working"};
 
@@ -154,10 +152,10 @@ class MakeSheet {
         }
 
         for (let i = 0; i < vidChunks.length; i++) {
-            console.log("Sending this chunk of vids to the sheet");
+            //console.log("Sending this chunk of vids to the sheet");
             this.addChunk(fileId, info, sheets)
                 .then(result => {
-                    console.log("Anddd we're done: " + JSON.stringify(result));
+                    //console.log("Anddd we're done: " + JSON.stringify(result));
                 })
                 .catch(err => {
                     return {error: err};
@@ -382,7 +380,7 @@ class MakeSheet {
             if (err) {
                 console.log(err);
             } else {
-                console.log("Successfully connected!");
+                //console.log("Successfully connected!");
             }
         });
         return jwtClient;

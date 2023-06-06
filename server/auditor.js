@@ -20,9 +20,6 @@ class Auditor {
     }
     async auditChannel(channelId, format, pubAfter, pubBefore, foldName, previousInfo=undefined) {
 
-        //console.log("Auditing " + channelId);
-        //console.log(channelId, format, pubAfter, pubBefore, foldName);
-
         if (pubAfter) {
             var yearAft = parseInt(pubAfter.substring(0, 4));
             var monthAft = parseInt(pubAfter.substring(5, 7));

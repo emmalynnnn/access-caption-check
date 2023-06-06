@@ -214,13 +214,19 @@ Create a trigger in Monday that will kick off the process to run a report that w
 
 ### 6.5.23
 * Tried to follow this instructions [here](https://stackoverflow.com/questions/53340878/econnreset-in-express-js-node-js-with-multiple-requests) to fix ECONNRESET but they didn't work
+* Asked the dli-coding-projects slack channel for help
+  * Carter thought I could try adding a wait between requests
+  * Or maybe try axios interceptors
+* Adding the throttle works!!
 * 
 
 ## TODO
 * ECONNRESET
+* Extension goes on forever????
 * Quota limit testing
 * Bulk testing
 * Negative uncaptioned seconds????
+* Clean up
 
 Next version:
 * Google drive folder selection
@@ -228,6 +234,7 @@ Next version:
 
 Dependencies:
 * Vue
+* promise-ratelimit
 * Other stuff that I don't remember off the top of my head cause I've been bad about updating this list
 
 ## Sources/References

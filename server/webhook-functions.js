@@ -8,6 +8,8 @@ const MakeSheet = require("./make-sheet");
 const makeSheet = new MakeSheet();
 const converter = require("./dur-iso");
 
+var throttle = require('promise-ratelimit')(20);
+
 const MOST_RECENT_VID_COL = "date";
 const NUM_CAP_COL = "numbers4";
 const SEC_COL = "numbers6";
@@ -58,31 +60,30 @@ class WebhookFunctions {
                     }
                     return makeSheet.makeSheet(info.name, info.foldId, true)
                         .then(id => {
-                            //console.log("here is the sheet id! We have it already!!!", id);
                             if (id === "folder id is invalid") {
                                 info.status = "folder id is invalid";
                                 return info;
                             }
                             info.sheetId = id;
                             return auditor.auditChannel(info.channelId, "Sheets", "", "", "ID found", info)
-                                .then(async(results) => {
-                                    //console.log(results);
-                                    //console.log("To audit: " + results.vidIds);
+                        .then(async(results) => {
+                            //console.log(results);
+                            //console.log("To audit: " + results.vidIds);
 
-                                    let vidInfo = [];
+                            let vidInfo = [];
 
-                                    let vidChunks = [[]];
-                                    let chunkIndex = 0;
+                            let vidChunks = [[]];
+                            let chunkIndex = 0;
 
-                                    for (let i = 0; i < results.vidIds.length; i++) {
-                                        if (vidChunks[chunkIndex].length >= VID_CHUNK_SIZE) {
-                                            chunkIndex++;
-                                            vidChunks.push([]);
-                                        }
-                                        vidChunks[chunkIndex].push(results.vidIds[i]);
-                                    }
+                            for (let i = 0; i < results.vidIds.length; i++) {
+                                if (vidChunks[chunkIndex].length >= VID_CHUNK_SIZE) {
+                                    chunkIndex++;
+                                    vidChunks.push([]);
+                                }
+                                vidChunks[chunkIndex].push(results.vidIds[i]);
+                            }
 
-                                    for (let i = 0; i < vidChunks.length; i++) {
+                            for (let i = 0; i < vidChunks.length; i++) {
                                         /*vidInfo.push(auditor.getVidInfo(results.vidIds[i])
                                             .then(result => {
                                                 let vidSec = converter.convertToSecond(result.rawDur);
@@ -96,31 +97,34 @@ class WebhookFunctions {
                                                 //console.log("result", result);
                                                 return result;
                                             }));*/
-                                        let littleInfo = await this.getChunkOfVids(vidChunks[i]);
-                                        console.log(littleInfo);
-                                        vidInfo = vidInfo.concat(littleInfo.vidInfo);
-                                    }
-                                    info.vidInfo = vidInfo;
-                                    console.log("The info in here", info);
-                                    return info;
-                                    //return res.status(200).json({result: results});
-                                }).catch(err => {
-                                    console.log(err);
-                                    //return res.status(500).json({result: "Error: channel audit failed"});
-                                });
+                                let littleInfo = await this.getChunkOfVids(vidChunks[i]);
+                                //console.log(littleInfo);
+                                vidInfo = vidInfo.concat(littleInfo.vidInfo);
+                            }
+                            info.vidInfo = vidInfo;
+                            //console.log("The info in here", info);
+                            return info;
+                            //return res.status(200).json({result: results});
+                        }).catch(err => {
+                            console.log(err);
+                            //return res.status(500).json({result: "Error: channel audit failed"});
+                        });
                         });
                 }
+
+
             });
     }
 
     async getChunkOfVids(vidIds) {
-        console.log("These vidIds: " + vidIds);
+        //console.log("These vidIds: " + vidIds);
         let vidInfo = [];
         /*let totSec = 0;
         let numCap = 0;
         let secCap = 0;*/
 
         for (let i = 0; i < vidIds.length; i++) {
+            await throttle();
             vidInfo.push(auditor.getVidInfo(vidIds[i])
                 .then(result => {
                     /*let vidSec = converter.convertToSecond(result.rawDur);
