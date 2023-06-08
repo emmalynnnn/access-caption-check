@@ -1,10 +1,12 @@
 const axios = require("axios");
 require('dotenv').config();
-const YOUTUBE_API_KEY = process.env.YOUTUBE_API;
+let YOUTUBE_API_KEY = process.env.YOUTUBE_API;
+let EXTRA_YOUTUBE_KEYS = process.env.EXTRA_YOUTUBE_KEYS;
+
 const VIDS_ON_PAGE = 50;
 const converter = require("./dur-iso");
 
-const ECONNRESET_TRIES = 0;
+const ECONNRESET_TRIES = 2;
 
 class Auditor {
 
@@ -15,10 +17,50 @@ class Auditor {
                 return response.data;
             })
             .catch(error => {
+                if (error.message === "Request failed with status code 403") {
+                    console.log("Error 403 in request: time to switch to a new API key.");
+                    console.log("Old key: " + YOUTUBE_API_KEY);
+                    let keys = EXTRA_YOUTUBE_KEYS.split(",");
+                    YOUTUBE_API_KEY = keys[0];
+                    let temp = "";
+                    for (let i = 1; i < keys.length; i++) {
+                        temp += (keys[i] + ",");
+                    }
+                    EXTRA_YOUTUBE_KEYS = temp;
+                    console.log("New key: " + YOUTUBE_API_KEY);
+                    console.log("Extras: " + EXTRA_YOUTUBE_KEYS);
+
+                    return "key swap needed";
+                }
                 throw error;
             });
     }
-    async auditChannel(channelId, format, pubAfter, pubBefore, foldName, previousInfo=undefined) {
+    async getData(url) {
+
+        return axios.get(url)
+            .then(response => {
+                return response;
+            })
+            .catch(error => {
+                if (error.message === "Request failed with status code 403") {
+                    console.log("Error 403 in request: time to switch to a new API key.");
+                    console.log("Old key: " + YOUTUBE_API_KEY);
+                    let keys = EXTRA_YOUTUBE_KEYS.split(",");
+                    YOUTUBE_API_KEY = keys[0];
+                    let temp = "";
+                    for (let i = 1; i < keys.length; i++) {
+                        temp += (keys[i] + ",");
+                    }
+                    EXTRA_YOUTUBE_KEYS = temp;
+                    console.log("New key: " + YOUTUBE_API_KEY);
+                    console.log("Extras: " + EXTRA_YOUTUBE_KEYS);
+
+                    return "key swap needed";
+                }
+                throw error;
+            });
+    }
+    async auditChannel(channelId, format, pubAfter, pubBefore, foldName, previousInfo=undefined, retry=false) {
 
         if (pubAfter) {
             var yearAft = parseInt(pubAfter.substring(0, 4));
@@ -58,8 +100,18 @@ class Auditor {
             "key=" + YOUTUBE_API_KEY +
             "&id=" + channelId + "&part=snippet%2CcontentDetails%2Cstatistics";
 
-        return axios.get(url)
+        return this.getData(url)
             .then( response => {
+                if (response === "key swap needed") {
+                    if (retry) {
+                        console.log("Key swap failed.")
+                        throw Error("YouTube Auth Failed.")
+                    } else {
+                        console.log("New key: " + YOUTUBE_API_KEY);
+                        return this.auditChannel(channelId, format, pubAfter, pubBefore, foldName, previousInfo, true);
+                    }
+                }
+
                 let json = response.data;
 
                 resultsObj.numVid = json.items[0].statistics.videoCount;
@@ -81,11 +133,21 @@ class Auditor {
 
     }
 
-    async getVidInfo(id, tries=0) {
+    async getVidInfo(id, tries=0, retry=false) {
         let url = "https://www.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails%2CliveStreamingDetails%2Cstatistics&" +
             "id=" + id + "&key=" + YOUTUBE_API_KEY;
         return axios.get(url)
             .then( json => {
+                if (json === "key swap needed") {
+                    if (retry) {
+                        console.log("Key swap failed.")
+                        throw Error("YouTube Auth Failed.")
+                    } else {
+                        console.log("New key: " + YOUTUBE_API_KEY);
+                        return this.getVidInfo(id, tries, true);
+                    }
+                }
+
                 let durISO = json.data.items[0].contentDetails.duration;
                 let formatted = converter.convertYouTubeDuration(durISO);
                 //console.log(formatted);
@@ -128,7 +190,7 @@ class Auditor {
     }
 
     async getVidIds(pagination, resultsObj, playlistId, pubAfter, pubBefore, yearAft, monthAft, dayAft,
-                             yearBef, monthBef, dayBef, nextPageToken) {
+                             yearBef, monthBef, dayBef, nextPageToken, retry=false) {
         let url = "https://youtube.googleapis.com/youtube/v3/playlistItems?playlistId=" + playlistId + "&key=" +
             YOUTUBE_API_KEY + "&maxResults=50&part=snippet%2CcontentDetails%2Cstatus";
 
@@ -136,8 +198,20 @@ class Auditor {
             url += ("&pageToken=" + nextPageToken)
         }
 
-        return axios.get(url)
+        return this.getData(url)
             .then( response => {
+                if (response === "key swap needed") {
+                    if (retry) {
+                        console.log("Key swap failed.")
+                        throw Error("YouTube Auth Failed.")
+                    } else {
+                        console.log("New key: " + YOUTUBE_API_KEY);
+                        return this.getVidIds(pagination, resultsObj, playlistId, pubAfter, pubBefore, yearAft, monthAft, dayAft,
+                            yearBef, monthBef, dayBef, nextPageToken, true);
+                    }
+                }
+
+                console.log(response.data)
                 let json = response.data;
 
                 for (let i = 0; i < json.items.length; i++) {
@@ -203,7 +277,7 @@ class Auditor {
                     return this.getVidIds(pagination, resultsObj, playlistId, pubAfter, pubBefore, yearAft, monthAft, dayAft,
                         yearBef, monthBef, dayBef, newNextPageToken);
                 }
-            })
+            });
 
     }
 }

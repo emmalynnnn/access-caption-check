@@ -1,6 +1,7 @@
 const UpdateMonday = require("./update-monday");
 const updateMonday = new UpdateMonday();
-const YOUTUBE_API_KEY = process.env.YOUTUBE_API;
+let YOUTUBE_API_KEY = process.env.YOUTUBE_API;
+let EXTRA_YOUTUBE_KEYS = process.env.EXTRA_YOUTUBE_KEYS;
 const axios = require('axios');
 
 class GetChannelInfo {
@@ -19,8 +20,24 @@ class GetChannelInfo {
                 return response.data;
             })
             .catch(error => {
-                console.log("Error in getData: " + error);
-                throw error;
+                console.log("Error caught in getData");
+                if (error.message === "Request failed with status code 403") {
+                    console.log("Error 403 in request: time to switch to a new API key.");
+                    console.log("Old key: " + YOUTUBE_API_KEY);
+                    let keys = EXTRA_YOUTUBE_KEYS.split(",");
+                    YOUTUBE_API_KEY = keys[0];
+                    let temp = "";
+                    for (let i = 1; i < keys.length; i++) {
+                        temp += (keys[i] + ",");
+                    }
+                    EXTRA_YOUTUBE_KEYS = temp;
+                    console.log("New key: " + YOUTUBE_API_KEY);
+                    console.log("Extras: " + EXTRA_YOUTUBE_KEYS);
+
+                    return "key swap needed";
+                } else {
+                    throw error;
+                }
             });
     }
 
@@ -61,7 +78,7 @@ class GetChannelInfo {
         }
     }
 
-    async makeChannelAPICall(res, channelInfo) {
+    async makeChannelAPICall(res, channelInfo, retry=false) {
         let channelId = channelInfo.channelId;
 
         let url = "https://youtube.googleapis.com/youtube/v3/channels?" +
@@ -71,6 +88,15 @@ class GetChannelInfo {
         return this.getData(url)
             .then( dataObj => {
                 //console.log(dataObj);
+                if (dataObj === "key swap needed") {
+                    if (retry) {
+                        console.log("Key swap failed.")
+                        throw Error("YouTube Auth Failed.")
+                    } else {
+                        console.log("New key: " + YOUTUBE_API_KEY);
+                        return this.makeChannelAPICall(res, channelInfo, true);
+                    }
+                }
 
                 let validatedResponse = this.validateResponse(dataObj, 1);
                 if (validatedResponse !== 0 && validatedResponse !== 1) {
@@ -111,7 +137,7 @@ class GetChannelInfo {
             })
     }
 
-    async getPlaylistItemInfo(res, channelInfo) {
+    async getPlaylistItemInfo(res, channelInfo, retry=false) {
 
         let url = "https://youtube.googleapis.com/youtube/v3/playlistItems?" +
             "key=" + YOUTUBE_API_KEY +
@@ -119,6 +145,17 @@ class GetChannelInfo {
 
         return this.getData(url)
             .then(result => {
+
+                if (result === "key swap needed") {
+                    if (retry) {
+                        console.log("Key swap failed.")
+                        throw Error("YouTube Auth Failed.")
+                    } else {
+                        console.log("New key: " + YOUTUBE_API_KEY);
+                        return this.getPlaylistItemInfo(res, channelInfo, false);
+                    }
+                }
+
                 //console.log("Getting playlist item info")
                 //console.log(result);
                 let dataObj = result;

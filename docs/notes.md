@@ -221,13 +221,28 @@ Create a trigger in Monday that will kick off the process to run a report that w
 * Fixed the negative uncaptioned seconds issue
   * I think that maybe time for videos that were originally live streams got left out of the original count
 
+### 6.8.23
+* Looking at large channel repetition error
+  * Observed on Extension (1666), Extension Forestry (but not the first time) (465), UtahStateAthletics (1488), Huntsman Business School (712)
+  * Tried again with Extension Forestry and not observed
+  * Tried again with Huntsman Business School and not observed
+* Finally hit quota limit of API key
+* Added error handling for hitting quota limits
+* Going back to repetition error
+  * Tried again with Extension Forestry and not observed
+  * Tried again with Huntsman Business School and not observed
+  * Tried again with UtahStateAthletics and observed
+    * Didn't really see anything in the logs of why that could be happening
+    * No obvious repetitions
+
 ## TODO
 
 On this branch:
-* Quota limit rotation and error catching
+* Extension goes on forever????
+* Send sheet data in chunks in web application
+  * To avoid 413 error
 
 On prep for deployment branch:
-* Extension goes on forever????
 * Quota limit testing
 * Bulk testing
 * Clean up

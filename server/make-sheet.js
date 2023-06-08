@@ -91,13 +91,11 @@ class MakeSheet {
         let values = [];
 
         return Promise.all(info).then((vidInfo) => {
-            //console.log("Filling in the sheet with " + vidInfo)
             for (let i = 0; i < info.length; i++) {
                 if (vidInfo[i] === 'nope') {
                     continue;
                 }
 
-                //console.log("Adding row for " + vidInfo[i].title);
                 let vidTitle = (vidInfo[i].title).replace(/["]+/g, '');
                 let linkTitle = '=HYPERLINK("' + vidInfo[i].url + '", "' + vidTitle + '")';
                 values.push([linkTitle, vidInfo[i].date, vidInfo[i].dur, vidInfo[i].cap, vidInfo[i].views, vidInfo[i].profile]);
@@ -109,7 +107,7 @@ class MakeSheet {
 
             let range = "Sheet1!A" + (2) + ":F" + (2);
 
-            //console.log("Now we're filling in the sheet with this chunk");
+            console.log("Done making rows for this chunk");
 
             let result = {status: "working"};
 
@@ -151,11 +149,13 @@ class MakeSheet {
             vidChunks[chunkIndex].push(info[i]);
         }
 
+        console.log("There are " + vidChunks.length + " chunks of videos")
+
         for (let i = 0; i < vidChunks.length; i++) {
-            //console.log("Sending this chunk of vids to the sheet");
+            console.log("Sending chunk " + (i + 1) + " of vids to the sheet");
             this.addChunk(fileId, info, sheets)
                 .then(result => {
-                    //console.log("Anddd we're done: " + JSON.stringify(result));
+                    console.log("And we're done with chunk " + (i + 1) + " " + result);
                 })
                 .catch(err => {
                     return {error: err};
@@ -164,58 +164,10 @@ class MakeSheet {
 
         return {status: "success"}
 
-        /*let values = [];
-
-        return Promise.all(info).then((vidInfo) => {
-            //console.log("Filling in the sheet with " + vidInfo)
-            for (let i = 0; i < info.length; i++) {
-                if (vidInfo[i] === 'nope') {
-                    continue;
-                }
-
-                //console.log("Adding row for " + vidInfo[i].title);
-                let vidTitle = (vidInfo[i].title).replace(/["]+/g, '');
-                let linkTitle = '=HYPERLINK("' + vidInfo[i].url + '", "' + vidTitle + '")';
-                values.push([linkTitle, vidInfo[i].date, vidInfo[i].dur, vidInfo[i].cap, vidInfo[i].views, vidInfo[i].profile]);
-            }
-
-            const resource = {
-                values,
-            };
-
-            let range = "Sheet1!A" + (2) + ":F" + (2);
-
-            console.log("Now we're filling in the sheet");
-            let jwtClient = this.authorizeGoogle();
-            let sheets = google.sheets({version: 'v4', auth: jwtClient});
-
-            let result = {status: "working"};
-
-            sheets.spreadsheets.values.append({
-                spreadsheetId: fileId,
-                range: range,
-                valueInputOption: "user_entered",
-                resource: resource
-            }, function (err, response) {
-                if (err) {
-                    console.log('The API returned an error. ' + err);
-                    //return {error: err.message};
-                    result = {error: err.message};
-                } else {
-                    result = {status: "successful"};
-                }
-            });
-            return result;
-        })
-            .catch(err => {
-                console.log(`There was an error filling in the sheet: ${err.message}`);
-                return {error: err.message};
-            });*/
-
     }
 
     async moveSheet(id, folderId, jwtClient) {
-        //console.log("Moving the sheet!!");
+        console.log("Moving the sheet!!");
         //let jwtClient = authorizeGoogle();
         const service = google.drive({version: 'v3', auth: jwtClient});
         try {

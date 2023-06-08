@@ -26,7 +26,7 @@ class WebhookFunctions {
         return getChannelInfo.updateChannelInfo(res, rowInfo)
             .then(info => {
                 var info = info;
-                console.log("The info: " + JSON.stringify(info));
+                //console.log("The info: " + JSON.stringify(info));
                 if (info.status !== undefined) {
                     console.log("There was an error :( " + info.status);
                     if (info.status === "deleted") {
@@ -67,7 +67,6 @@ class WebhookFunctions {
                             info.sheetId = id;
                             return auditor.auditChannel(info.channelId, "Sheets", "", "", "ID found", info)
                         .then(async(results) => {
-                            //console.log(results);
                             //console.log("To audit: " + results.vidIds);
 
                             let vidInfo = [];
@@ -83,31 +82,18 @@ class WebhookFunctions {
                                 vidChunks[chunkIndex].push(results.vidIds[i]);
                             }
 
+                            console.log("There are " + vidChunks.length + " chunks of videos.")
+
                             for (let i = 0; i < vidChunks.length; i++) {
-                                        /*vidInfo.push(auditor.getVidInfo(results.vidIds[i])
-                                            .then(result => {
-                                                let vidSec = converter.convertToSecond(result.rawDur);
-                                                info.totSec += vidSec;
-
-                                                if (result.cap === "Yes") {
-                                                    info.numCap++;
-                                                    info.secCap += vidSec;
-                                                }
-
-                                                //console.log("result", result);
-                                                return result;
-                                            }));*/
                                 let littleInfo = await this.getChunkOfVids(vidChunks[i]);
-                                //console.log(littleInfo);
+                                console.log("Chunk " + (i + 1));
                                 vidInfo = vidInfo.concat(littleInfo.vidInfo);
                             }
                             info.vidInfo = vidInfo;
-                            //console.log("The info in here", info);
+                            console.log("The info in here", info);
                             return info;
-                            //return res.status(200).json({result: results});
                         }).catch(err => {
                             console.log(err);
-                            //return res.status(500).json({result: "Error: channel audit failed"});
                         });
                         });
                 }
@@ -144,7 +130,7 @@ class WebhookFunctions {
 
 
     async getChannelId(res, itemId, boardId) {
-        //console.log("Getting the channel Id")
+        console.log("Getting the channel Id")
 
         const colIds = `[text, ${REPORT_COL}, ${MOST_RECENT_VID_COL}, ${NUM_CAP_COL}, ${SEC_COL}, ${SEC_CAP_COL}]`
 
@@ -171,7 +157,7 @@ class WebhookFunctions {
                     mostRecentVid: item.column_values[2].text, capedVids: item.column_values[3].text,
                     secs: item.column_values[4].text, capedSecs: item.column_values[5].text,
                     foldId: foldId, boardId: boardId};
-                //console.log(item, row);
+                //console.log("item, row from in getChannelId", item, row);
 
                 if (item.column_values[0].text === "") {
                     console.log("No channel id given for " + item.name);

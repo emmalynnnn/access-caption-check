@@ -149,6 +149,9 @@ app.post("/webhook-endpoint", function(req, res) {
                             if (info.status === "folder id is invalid") {
                                 updateMonday.updateStatus(res, info, "error");
                                 console.log("end ---------------- /webhook-endpoint ----------------");
+                            } else if (info.status === "No folder id") {
+                                updateMonday.updateStatus(res, info, "error");
+                                console.log("end ---------------- /webhook-endpoint ----------------");
                             } else if (info.status !== "Up to date" && info !== "") {
                                 makeSheet.fillSheetWebhook(info.sheetId, info.vidInfo)
                                     .then(response => {
