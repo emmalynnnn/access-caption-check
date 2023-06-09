@@ -69,7 +69,7 @@ app.post("/fill-sheet", function(req, res) {
 
     //console.log("The vid info: " + JSON.stringify(req.body.vidInfo));
 
-    makeSheet.fillSheet(req.body.sheetId, req.body.vidInfo)
+    makeSheet.fillSheet(req.body.sheetId, req.body.vidInfo, req.body.firstIndex)
         .then( results => {
             console.log("end ---------------- /fill-sheet ----------------");
             return res.status(200).json({status: "Success"});
@@ -77,6 +77,25 @@ app.post("/fill-sheet", function(req, res) {
         .catch(err => {
             console.log("end ---------------- /fill-sheet ----------------");
             console.log("Error filling in the sheet " + err);
+            return res.status(500).json({status: "Failure: " + err});
+        });
+})
+
+app.post("/sort-sheet", function(req, res) {
+    console.log("---------------- /sort-sheet ----------------");
+
+    let sheetId = req.body.sheetId;
+    //let sheetId = "1IR9Ky2Ih0oAWoW864FjTPvK_azQGQNgV3GG32PD3Uvg";
+    console.log(sheetId);
+
+    makeSheet.sortSheet(sheetId)
+        .then( results => {
+            console.log("end ---------------- /sort-sheet ----------------");
+            return res.status(200).json({status: "Success"});
+        })
+        .catch(err => {
+            console.log("end ---------------- /sort-sheet ----------------");
+            console.log("Error sorting the sheet " + err);
             return res.status(500).json({status: "Failure: " + err});
         });
 })

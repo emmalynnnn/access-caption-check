@@ -84,9 +84,6 @@ export default {
   components: {
     ChannelInfoForm,
   },
-  mixins: [
-    require('./myMixins.vue')
-  ],
 
   data() {
     return {
@@ -103,6 +100,7 @@ export default {
       sheetId: "",
       vidsFound: 0,
       numToCheckFor: 0,
+      VID_CHUNK_SIZE: 100,
     };
   },
 
@@ -119,15 +117,37 @@ export default {
         //console.log("Found them all");
 
         //console.log("Sending " + this.vidInfo);
-        this.postData(this.SERVER_URL + "fill-sheet/", {sheetId: this.sheetId, vidInfo: this.vidInfo})
-            .then(response => {
-              //console.log(response);
-            });
+        this.sendToSheetInChunks()
+            .then(resp => {
+              this.postData(this.SERVER_URL + "sort-sheet/", {sheetId: this.sheetId});
+        });
       }
     }
   },
 
   methods: {
+    async sendToSheetInChunks() {
+      let vidChunks = [[]];
+      let chunkIndex = 0;
+
+      for (let i = 0; i < this.vidInfo.length; i++) {
+        if (vidChunks[chunkIndex].length >= this.VID_CHUNK_SIZE) {
+          chunkIndex++;
+          vidChunks.push([]);
+        }
+        vidChunks[chunkIndex].push(this.vidInfo[i]);
+      }
+
+      //console.log("There are " + vidChunks.length + " chunks of videos.")
+
+      for (let i = 0; i < vidChunks.length; i++) {
+        let firstIndex = i * this.VID_CHUNK_SIZE;
+        console.log(firstIndex);
+        let sheetRes = await this.postData(this.SERVER_URL + "fill-sheet/", {sheetId: this.sheetId, vidInfo: vidChunks[i], firstIndex: firstIndex});
+        //console.log("Chunk " + (i + 1) + " with " + JSON.stringify(vidChunks[i]));
+        //console.log("sheetRes:", sheetRes);
+      }
+    },
     download() {
 
       document.getElementById("downloadBox").style="display: none;";

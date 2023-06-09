@@ -1,6 +1,8 @@
 const {google} = require("googleapis");
 const privatekey = require("./service_account.json");
 
+var throttle = require('promise-ratelimit')(20);
+
 const VID_CHUNK_SIZE = 50;
 
 class MakeSheet {
@@ -43,10 +45,12 @@ class MakeSheet {
         //return res.status(200).json({id: response.data.spreadsheetId});
         return response.data.spreadsheetId;
     }
-    async fillSheet(fileId, info) {
+    async fillSheet(fileId, info, firstIndex) {
+        await throttle();
         console.log("Filling in the sheet!!")
         //info = JSON.parse(info);
         //console.log("Adding a new row for " + info.title);
+        //let removed = 0;
 
         let jwtClient = this.authorizeGoogle();
         let sheets = google.sheets({version: 'v4', auth: jwtClient});
@@ -55,13 +59,14 @@ class MakeSheet {
 
         for (let i = 0; i < info.length; i++) {
             if (info[i] === "nope") {
-                continue;
+                //removed++;
+                values.push(["Video found with no content - removed from report."])
+            } else {
+                //console.log("Adding row for " + info[i].title);
+                let vidTitle = (info[i].title).replace(/["]+/g, '');
+                let linkTitle = '=HYPERLINK("' + info[i].url + '", "' + vidTitle + '")';
+                values.push([linkTitle, info[i].date, info[i].dur, info[i].cap, info[i].views, info[i].profile])
             }
-
-            //console.log("Adding row for " + info[i].title);
-            let vidTitle = (info[i].title).replace(/["]+/g, '');
-            let linkTitle = '=HYPERLINK("' + info[i].url + '", "' + vidTitle + '")';
-            values.push([linkTitle, info[i].date, info[i].dur, info[i].cap, info[i].views, info[i].profile])
         }
 
         const resource = {
@@ -69,7 +74,7 @@ class MakeSheet {
         };
 
         //let range = "Sheet1!A" + (vidNum + 2) + ":F" + (vidNum + 2);
-        let range = "Sheet1!A" + (2) + ":F" + (2);
+        let range = "Sheet1!A" + (2 + firstIndex) + ":F" + (2 + firstIndex);
 
         sheets.spreadsheets.values.append({
             spreadsheetId: fileId,
@@ -316,6 +321,45 @@ class MakeSheet {
             //throw err;
         }
 
+    }
+
+    async sortSheet(id) {
+
+        let jwtClient = this.authorizeGoogle();
+        let sheets = google.sheets({version: 'v4', auth: jwtClient});
+
+        const requests = [{
+            sortRange: {
+                range: {
+                    "sheetId": 0,
+                    "startRowIndex": 1,
+                    "startColumnIndex": 0,
+                },
+                sortSpecs: [
+                    {
+                        sortOrder: "DESCENDING",
+                        dimensionIndex: 1
+                    }
+                    ]
+            },
+        },];
+        const resource = {
+            requests,
+        };
+
+        try {
+            console.log("Actually doing the sort");
+            console.log(JSON.stringify(resource), id);
+            const response = await sheets.spreadsheets.batchUpdate({
+                spreadsheetId: id,
+                resource,
+            });
+            console.log(response);
+            return response;
+        } catch (err) {
+            console.log(err);
+            throw err;
+        }
     }
 
     authorizeGoogle() {

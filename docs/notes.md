@@ -235,12 +235,18 @@ Create a trigger in Monday that will kick off the process to run a report that w
     * Didn't really see anything in the logs of why that could be happening
     * No obvious repetitions
 
+### 6.9.23
+* Changed client to send data in chunks to the server to be added to the sheet
+* Tested UtahStateAthletics with web application
+  * Repetition problem not observed I don't think but there is a different problem
+    * Big gaps in the sheet
+    * I think it's probably something to do with the offsets used to keep data from getting overwritten
+    * 
+
 ## TODO
 
 On this branch:
 * Extension goes on forever????
-* Send sheet data in chunks in web application
-  * To avoid 413 error
 
 On prep for deployment branch:
 * Quota limit testing
