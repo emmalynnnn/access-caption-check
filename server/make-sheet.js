@@ -4,6 +4,7 @@ const privatekey = require("./service_account.json");
 var throttle = require('promise-ratelimit')(20);
 
 const VID_CHUNK_SIZE = 50;
+const SHEET_EXTRA = 20;
 
 class MakeSheet {
     async makeSheet(name, foldNameOrId, isFoldId = false) {
@@ -323,6 +324,40 @@ class MakeSheet {
 
     }
 
+    async updateSheetSize(id, vidNum) {
+        vidNum = parseInt(vidNum);
+        let jwtClient = this.authorizeGoogle();
+        let sheets = google.sheets({version: 'v4', auth: jwtClient});
+
+        const requests = [{
+            updateSheetProperties: {
+                properties: {
+                    sheetId: 0,
+                    gridProperties: {
+                        rowCount: vidNum + SHEET_EXTRA,
+                    },
+                },
+                fields: "gridProperties.rowCount"
+            },
+        },];
+        const resource = {
+            requests,
+        };
+
+        try {
+            console.log(`Updating sheet size to ${vidNum + SHEET_EXTRA}`);
+            const response = await sheets.spreadsheets.batchUpdate({
+                spreadsheetId: id,
+                resource,
+            });
+            //console.log(response);
+            return response;
+        } catch (err) {
+            console.log(err);
+            throw err;
+        }
+    }
+
     async sortSheet(id) {
 
         let jwtClient = this.authorizeGoogle();
@@ -354,7 +389,7 @@ class MakeSheet {
                 spreadsheetId: id,
                 resource,
             });
-            console.log(response);
+            //console.log(response);
             return response;
         } catch (err) {
             console.log(err);

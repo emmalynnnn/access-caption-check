@@ -79,6 +79,9 @@ If google sheets was selected as the output, the sheet will have been automatica
 created and is accessible in the folder you specified and at the link at the top of
 the page.
 
+Note: This version of the tool has documented issues generating reports for channels with more than `1000` videos.
+It is recommended to use the webhook to generate reports for these large channels. This will be fixed in future versions.
+
 ### As a webhook on monday.com
 
 1. Navigate to the YouTube Channels board on monday.com.
@@ -103,6 +106,12 @@ correct.
   * The link to the folder listed in the `Reports` column is invalid
   * Another error has occurred. If none of the above are applicable and you are unsure
   why the error occurred, please follow the Bug Report instructions below.
+
+## Current version: 1.0.0
+**Features planned for future releases:**
+* GUI support for larger channels (`1000+` videos)
+* Folder selection directly from Google Drive
+* Improved report formatting
 
 ## Bug Reports
 If something behaves unexpectedly, or you run into a problem with the application,

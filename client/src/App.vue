@@ -101,6 +101,7 @@ export default {
       vidsFound: 0,
       numToCheckFor: 0,
       VID_CHUNK_SIZE: 100,
+      toSheet: undefined,
     };
   },
 
@@ -113,11 +114,15 @@ export default {
         this.numToCheckFor++;
       }
 
-      if (newVidsFound === parseInt(this.numToCheckFor)) {
+      if (newVidsFound === parseInt(this.numToCheckFor) && this.toSheet) {
         //console.log("Found them all");
 
-        //console.log("Sending " + this.vidInfo);
-        this.sendToSheetInChunks()
+        this.postData(this.SERVER_URL + "size-sheet/", {sheetId: this.sheetId, vidNum: this.numVid})
+            .then(response => {
+              console.log(response);
+
+              return this.sendToSheetInChunks()
+            })
             .then(resp => {
               this.postData(this.SERVER_URL + "sort-sheet/", {sheetId: this.sheetId});
         });
@@ -216,6 +221,7 @@ export default {
         //console.log("The sheet id is: " + results.sheetId);
 
         if (foldName) {
+          this.toSheet = true;
           console.log("There is a foldName so we're doing this " + foldName)
           this.downloaded = true;
           this.postData(this.SERVER_URL + "create-sheet/", {foldName: foldName, name: this.name})
@@ -253,6 +259,7 @@ export default {
                 }
               })
         } else {
+          this.toSheet = false;
           for (let i = 0; i < results.vidIds.length; i++) {
             //console.log(results.vidIds[i]);
 

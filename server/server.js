@@ -67,7 +67,7 @@ app.post("/get-vid-info", function(req, res) {
 app.post("/fill-sheet", function(req, res) {
     console.log("---------------- /fill-sheet ----------------");
 
-    //console.log("The vid info: " + JSON.stringify(req.body.vidInfo));
+    //console.log("How many videos? " + req.body.vidInfo.length);
 
     makeSheet.fillSheet(req.body.sheetId, req.body.vidInfo, req.body.firstIndex)
         .then( results => {
@@ -95,6 +95,26 @@ app.post("/sort-sheet", function(req, res) {
         })
         .catch(err => {
             console.log("end ---------------- /sort-sheet ----------------");
+            console.log("Error sorting the sheet " + err);
+            return res.status(500).json({status: "Failure: " + err});
+        });
+})
+
+app.post("/size-sheet", function(req, res) {
+    console.log("---------------- /size-sheet ----------------");
+
+    let sheetId = req.body.sheetId;
+    let vidNum = req.body.vidNum;
+    //let sheetId = "16Ngx3spbffqB9m53XHGHiu5I9-ndIaiPY2KWkm0n5ac";
+
+    makeSheet.updateSheetSize(sheetId, vidNum)
+        .then( results => {
+            console.log(results);
+            console.log("end ---------------- /size-sheet ----------------");
+            return res.status(200).json({status: "Success"});
+        })
+        .catch(err => {
+            console.log("end ---------------- /size-sheet ----------------");
             console.log("Error sorting the sheet " + err);
             return res.status(500).json({status: "Failure: " + err});
         });
@@ -153,6 +173,8 @@ app.post("/webhook-endpoint", function(req, res) {
         let channelName = req.body.event.pulseName;
         let boardId = req.body.event.boardId;
 
+        let theInfo;
+
         console.log("Triggered on " + channelName);
         webhook.getChannelId(res, itemId, boardId)
             .then (rowInfo => {
@@ -172,13 +194,22 @@ app.post("/webhook-endpoint", function(req, res) {
                                 updateMonday.updateStatus(res, info, "error");
                                 console.log("end ---------------- /webhook-endpoint ----------------");
                             } else if (info.status !== "Up to date" && info !== "") {
-                                makeSheet.fillSheetWebhook(info.sheetId, info.vidInfo)
+                                theInfo = info;
+
+                                console.log("theInfo", theInfo);
+
+                                makeSheet.updateSheetSize(info.sheetId, info.videoCount)
+                                    .then(response => {
+                                        console.log(response);
+
+                                        return makeSheet.fillSheetWebhook(theInfo.sheetId, theInfo.vidInfo)
+                                    })
                                     .then(response => {
                                         console.log("Response", response);
                                         if (response.error !== undefined) {
-                                            updateMonday.updateStatus(res, info, "error");
+                                            updateMonday.updateStatus(res, theInfo, "error");
                                         } else {
-                                            updateMonday.updateBoardPostAudit(res, info);
+                                            updateMonday.updateBoardPostAudit(res, theInfo);
                                         }
                                         console.log("end ---------------- /webhook-endpoint ----------------");
                                     });

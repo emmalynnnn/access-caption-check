@@ -138,15 +138,6 @@ class Auditor {
             "id=" + id + "&key=" + YOUTUBE_API_KEY;
         return axios.get(url)
             .then( json => {
-                if (json === "key swap needed") {
-                    if (retry) {
-                        console.log("Key swap failed.")
-                        throw Error("YouTube Auth Failed.")
-                    } else {
-                        console.log("New key: " + YOUTUBE_API_KEY);
-                        return this.getVidInfo(id, tries, true);
-                    }
-                }
 
                 let durISO = json.data.items[0].contentDetails.duration;
                 let formatted = converter.convertYouTubeDuration(durISO);
@@ -179,6 +170,29 @@ class Auditor {
             })
             .catch( err => {
                 console.log("This error was caught while getting the vid info", err.message);
+
+                if (error.message === "Request failed with status code 403") {
+                    console.log("Error 403 in request: time to switch to a new API key.");
+                    console.log("Old key: " + YOUTUBE_API_KEY);
+                    let keys = EXTRA_YOUTUBE_KEYS.split(",");
+                    YOUTUBE_API_KEY = keys[0];
+                    let temp = "";
+                    for (let i = 1; i < keys.length; i++) {
+                        temp += (keys[i] + ",");
+                    }
+                    EXTRA_YOUTUBE_KEYS = temp;
+                    console.log("New key: " + YOUTUBE_API_KEY);
+                    console.log("Extras: " + EXTRA_YOUTUBE_KEYS);
+
+                    if (retry) {
+                        console.log("Key swap failed.")
+                        throw Error("YouTube Auth Failed.")
+                    } else {
+                        console.log("New key: " + YOUTUBE_API_KEY);
+                        return this.getVidInfo(id, tries, true);
+                    }
+                }
+
                 if (err.message === "read ECONNRESET" && tries < ECONNRESET_TRIES) {
                     console.log(`${id}: Trying again - ${tries}`)
                     return this.getVidInfo(id, tries + 1)

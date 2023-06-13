@@ -241,21 +241,25 @@ Create a trigger in Monday that will kick off the process to run a report that w
   * Repetition problem not observed I don't think but there is a different problem
     * Big gaps in the sheet
     * I think it's probably something to do with the offsets used to keep data from getting overwritten
-    * 
+
+### 6.13.23
+* Remaining issues:
+  * Duplication in large sheets - webhook
+    * Only observed in channels with more than 1000 videos- `Extension` and `UtahStateAthletics`
+  * Big gaps in large sheets - GUI
+    * Only observed in channels with more than 1000 videos- `Extension` and `UtahStateAthletics`
+* They could be something with having to extend the sheet??
+* Added a call to increase the sheet size before adding - that seems to have fixed the duplication problem!!
+  * I'll try adding it to the GUI as well to see if that helps with its problem
+  * Wellll it didn't exactly work- I think I might just continue and fix it in a later version since I think they would rather have the tool sooner than wait longer for a feature to work that they probably won't use much.
+
 
 ## TODO
-
-On this branch:
-* Extension goes on forever????
-
-On prep for deployment branch:
-* Quota limit testing
-* Bulk testing
-* Clean up
 
 Next version:
 * Google drive folder selection
 * Table formatting
+* Fix large channel (1000+ vids) GUI google sheet
 
 Dependencies:
 * Vue
