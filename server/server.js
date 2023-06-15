@@ -20,7 +20,8 @@ app.use(bodyParser.json());
 
 const cors = require('cors');
 app.use(cors({
-    origin: 'http://localhost:8080'
+    //origin: 'http://localhost:8080'
+    origin: 'https://master.d18gulj4il0z61.amplifyapp.com'
 }));
 
 app.get('/', (req, res) => {

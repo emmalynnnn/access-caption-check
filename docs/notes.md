@@ -253,8 +253,15 @@ Create a trigger in Monday that will kick off the process to run a report that w
   * I'll try adding it to the GUI as well to see if that helps with its problem
   * Wellll it didn't exactly work- I think I might just continue and fix it in a later version since I think they would rather have the tool sooner than wait longer for a feature to work that they probably won't use much.
 
+### 6.15.23
+* Got permissions and deployed frontend
+  * Tested with local server
+* Started setting up backend deployment
 
 ## TODO
+* Create dependency layer
+* Figure out API Gateway
+* Finish deployment
 
 Next version:
 * Google drive folder selection
