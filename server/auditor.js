@@ -1,5 +1,5 @@
 const axios = require("axios");
-require('dotenv').config();
+//require('dotenv').config();
 let YOUTUBE_API_KEY = process.env.YOUTUBE_API;
 let EXTRA_YOUTUBE_KEYS = process.env.EXTRA_YOUTUBE_KEYS;
 
@@ -171,7 +171,7 @@ class Auditor {
             .catch( err => {
                 console.log("This error was caught while getting the vid info", err.message);
 
-                if (error.message === "Request failed with status code 403") {
+                if (err.message === "Request failed with status code 403") {
                     console.log("Error 403 in request: time to switch to a new API key.");
                     console.log("Old key: " + YOUTUBE_API_KEY);
                     let keys = EXTRA_YOUTUBE_KEYS.split(",");
@@ -204,7 +204,7 @@ class Auditor {
     }
 
     async getVidIds(pagination, resultsObj, playlistId, pubAfter, pubBefore, yearAft, monthAft, dayAft,
-                             yearBef, monthBef, dayBef, nextPageToken, retry=false) {
+                    yearBef, monthBef, dayBef, nextPageToken, retry=false) {
         let url = "https://youtube.googleapis.com/youtube/v3/playlistItems?playlistId=" + playlistId + "&key=" +
             YOUTUBE_API_KEY + "&maxResults=50&part=snippet%2CcontentDetails%2Cstatus";
 

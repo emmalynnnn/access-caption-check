@@ -66,35 +66,35 @@ class WebhookFunctions {
                             }
                             info.sheetId = id;
                             return auditor.auditChannel(info.channelId, "Sheets", "", "", "ID found", info)
-                        .then(async(results) => {
-                            //console.log("To audit: " + results.vidIds);
+                                .then(async(results) => {
+                                    //console.log("To audit: " + results.vidIds);
 
-                            let vidInfo = [];
+                                    let vidInfo = [];
 
-                            let vidChunks = [[]];
-                            let chunkIndex = 0;
+                                    let vidChunks = [[]];
+                                    let chunkIndex = 0;
 
-                            for (let i = 0; i < results.vidIds.length; i++) {
-                                if (vidChunks[chunkIndex].length >= VID_CHUNK_SIZE) {
-                                    chunkIndex++;
-                                    vidChunks.push([]);
-                                }
-                                vidChunks[chunkIndex].push(results.vidIds[i]);
-                            }
+                                    for (let i = 0; i < results.vidIds.length; i++) {
+                                        if (vidChunks[chunkIndex].length >= VID_CHUNK_SIZE) {
+                                            chunkIndex++;
+                                            vidChunks.push([]);
+                                        }
+                                        vidChunks[chunkIndex].push(results.vidIds[i]);
+                                    }
 
-                            console.log("There are " + vidChunks.length + " chunks of videos.")
+                                    console.log("There are " + vidChunks.length + " chunks of videos.")
 
-                            for (let i = 0; i < vidChunks.length; i++) {
-                                let littleInfo = await this.getChunkOfVids(vidChunks[i]);
-                                console.log("Chunk " + (i + 1));
-                                vidInfo = vidInfo.concat(littleInfo.vidInfo);
-                            }
-                            info.vidInfo = vidInfo;
-                            console.log("The info in here", info);
-                            return info;
-                        }).catch(err => {
-                            console.log(err);
-                        });
+                                    for (let i = 0; i < vidChunks.length; i++) {
+                                        let littleInfo = await this.getChunkOfVids(vidChunks[i]);
+                                        console.log("Chunk " + (i + 1));
+                                        vidInfo = vidInfo.concat(littleInfo.vidInfo);
+                                    }
+                                    info.vidInfo = vidInfo;
+                                    console.log("The info in here", info);
+                                    return info;
+                                }).catch(err => {
+                                    console.log(err);
+                                });
                         });
                 }
 
@@ -148,7 +148,7 @@ class WebhookFunctions {
 
         return auditor.postData(url, body, headers)
             .then( result => {
-                //console.log(JSON.stringify(result));
+                console.log(JSON.stringify(result));
                 let item = result.data.boards[0].items[0];
                 let foldId = item.column_values[1].text;
                 foldId = foldId.substring(foldId.indexOf("folders/") + 8);
@@ -166,7 +166,7 @@ class WebhookFunctions {
                     return row;
                 }
 
-                //console.log("Successfully found info for " + item.name);
+                console.log("Successfully found info for " + item.name);
                 return row;
             })
             .catch( err => {

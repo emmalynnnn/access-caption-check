@@ -1,5 +1,6 @@
-require('dotenv').config();
+//require('dotenv').config();
 const {google} = require('googleapis');
+const serverless = require("serverless-http");
 
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -14,23 +15,25 @@ const UpdateMonday = require("./update-monday");
 //const cors = require("cors");
 const updateMonday = new UpdateMonday();
 
+const clientUrl = 'https://master.d18gulj4il0z61.amplifyapp.com'
+//const clientUrl = 'http://localhost:8080'
 
 const app = express();
 app.use(bodyParser.json());
 
 const cors = require('cors');
 app.use(cors({
-    //origin: 'http://localhost:8080'
-    origin: 'https://master.d18gulj4il0z61.amplifyapp.com'
+    origin: clientUrl
 }));
 
-app.get('/', (req, res) => {
-    console.log("---------------- / ----------------");
-    console.log("end ---------------- / ----------------");
+
+app.get('/test', (req, res) => {
+    console.log("Test endpoint hit");
+    console.log(req);
     res.send("Hello World!");
 });
 
-app.post("/", function(req, res) {
+app.post("/audit-channel", function(req, res) {
     console.log("---------------- / ----------------");
     console.log(req.body);
 
@@ -156,17 +159,27 @@ app.post("/create-sheet", function (req, res) {
         if (err) {
             console.log("Error creating spreadsheet " + err);
         } else {
-            makeSheet.moveSheet(response.data.spreadsheetId, folderId, jwtClient);
-            makeSheet.addHeader(response.data.spreadsheetId, jwtClient);
-            makeSheet.formatSheet(response.data.spreadsheetId, jwtClient);
-            console.log("end ---------------- /create-sheet ----------------");
-            return res.status(200).json({id: response.data.spreadsheetId});
+            makeSheet.moveSheet(response.data.spreadsheetId, folderId, jwtClient)
+                .then(resp => {
+                    return makeSheet.addHeader(response.data.spreadsheetId, jwtClient);
+                })
+                .then(resp => {
+                    return makeSheet.formatSheet(response.data.spreadsheetId, jwtClient);
+                })
+                .then(resp => {
+                    console.log("end ---------------- /create-sheet ----------------");
+                    return res.status(200).json({id: response.data.spreadsheetId});
+                });
         }
     });
 })
 
 app.post("/webhook-endpoint", function(req, res) {
-    res.status(200).send(req.body);
+    if (req.body.challenge) {
+        console.log(req.body);
+        res.status(200).send(req.body);
+        return;
+    }
     console.log("---------------- /webhook-endpoint ----------------");
 
     if (req.body.hasOwnProperty("event")) {
@@ -208,11 +221,18 @@ app.post("/webhook-endpoint", function(req, res) {
                                     .then(response => {
                                         console.log("Response", response);
                                         if (response.error !== undefined) {
-                                            updateMonday.updateStatus(res, theInfo, "error");
+                                            updateMonday.updateStatus(res, theInfo, "error")
+                                                .then(resp => {
+                                                    console.log("end ---------------- /webhook-endpoint ----------------");
+                                                    res.status(200).send({result: "error"});
+                                                });
                                         } else {
-                                            updateMonday.updateBoardPostAudit(res, theInfo);
+                                            updateMonday.updateBoardPostAudit(res, theInfo)
+                                                .then(resp => {
+                                                    console.log("end ---------------- /webhook-endpoint ----------------");
+                                                    res.status(200).send({result: "success"});
+                                                });
                                         }
-                                        console.log("end ---------------- /webhook-endpoint ----------------");
                                     });
                             }
                         });
@@ -220,10 +240,7 @@ app.post("/webhook-endpoint", function(req, res) {
             });
 
     }
-})
-
-
-const server = app.listen(8000, () => {
-    console.log('Running at 8000');
 });
 
+
+module.exports.handler = serverless(app);

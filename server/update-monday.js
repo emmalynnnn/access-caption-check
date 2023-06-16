@@ -75,7 +75,7 @@ class UpdateMonday {
 
     async updateBoardPostAudit(res, channelInfo) {
         Promise.all(channelInfo.vidInfo).then((vidInfo) => {
-            //console.log("updating the board post audit", channelInfo);
+            console.log("updating the board post audit", channelInfo);
 
             let vidsCaped = 0;
             let secCaped = 0;
@@ -88,9 +88,9 @@ class UpdateMonday {
                 }
             }
 
-            console.log("The number of vids captioned: " + vidsCaped);
+            /*console.log("The number of vids captioned: " + vidsCaped);
             console.log("The number of seconds captioned: " + secCaped);
-            console.log("The number of seconds total: " + totSec);
+            console.log("The number of seconds total: " + totSec);*/
 
             let newDate = channelInfo.mostRecentVideo.date.substring(0, channelInfo.mostRecentVideo.date.indexOf("T"));
 

@@ -40,12 +40,12 @@
           <tbody>
 
           <tr v-for="vid in displayVids" :key="vid.url">
-              <th scope="row"><a :href="vid.url">{{vid.title}}</a></th>
-              <td>{{vid.date}}</td>
-              <td>{{vid.dur}}</td>
-              <td :class="vid.cap">{{vid.cap}}</td>
-              <td class="data">{{vid.views}}</td>
-              <td :class="vid.profile">{{vid.profile}}</td>
+            <th scope="row"><a :href="vid.url">{{vid.title}}</a></th>
+            <td>{{vid.date}}</td>
+            <td>{{vid.dur}}</td>
+            <td :class="vid.cap">{{vid.cap}}</td>
+            <td class="data">{{vid.views}}</td>
+            <td :class="vid.profile">{{vid.profile}}</td>
           </tr>
 
           </tbody>
@@ -96,7 +96,8 @@ export default {
       vidInfo: [],
       channelId: "",
       downloaded: false,
-      SERVER_URL: "http://localhost:8000/",
+      //SERVER_URL: "http://localhost:8000/",
+      SERVER_URL: "https://phv9qevh0a.execute-api.us-east-1.amazonaws.com/prod/",
       sheetId: "",
       vidsFound: 0,
       numToCheckFor: 0,
@@ -125,7 +126,7 @@ export default {
             })
             .then(resp => {
               this.postData(this.SERVER_URL + "sort-sheet/", {sheetId: this.sheetId});
-        });
+            });
       }
     }
   },
@@ -204,7 +205,7 @@ export default {
 
       let inputData = {channelId: channelId, format: format, pubAfter: pubAfter, pubBefore: pubBefore, foldName: foldName}
 
-      this.postData(this.SERVER_URL, inputData).then((data) => {
+      this.postData(this.SERVER_URL + "audit-channel/", inputData).then((data) => {
         let results = data.result;
         //console.log(results);
         //console.log("We have gotten the results back!!");

@@ -113,7 +113,7 @@ class MakeSheet {
 
             let range = "Sheet1!A" + (2) + ":F" + (2);
 
-            console.log("Done making rows for this chunk");
+            console.log("Done making rows for this chunk " + values);
 
             let result = {status: "working"};
 
@@ -122,13 +122,15 @@ class MakeSheet {
                 range: range,
                 valueInputOption: "user_entered",
                 resource: resource
-            }, function (err, response) {
+            }, async function (err, response) {
                 if (err) {
                     console.log('The API returned an error. ' + err);
-                    //return {error: err.message};
-                    result = {error: err.message};
+                    return {error: err.message};
+                    //result = {error: err.message};
                 } else {
-                    result = {status: "successful"};
+                    console.log("We did it!!!!!");
+                    //result = {status: "successful"};
+                    return {status: "successful"};
                 }
             });
             return result;
@@ -159,16 +161,29 @@ class MakeSheet {
 
         for (let i = 0; i < vidChunks.length; i++) {
             console.log("Sending chunk " + (i + 1) + " of vids to the sheet");
-            this.addChunk(fileId, info, sheets)
+            /*this.addChunk(fileId, info, sheets)
                 .then(result => {
                     console.log("And we're done with chunk " + (i + 1) + " " + result);
+                    //check if this is the last one, if it is, return response
+                    if (i >= (vidChunks.length - 1)) {
+                        console.log("We're returning from the webhook sheet function");
+                        return {status: "success"};
+                    }
                 })
                 .catch(err => {
                     return {error: err};
-                })
+                });*/
+
+            let result = await this.addChunk(fileId, info, sheets)
+            console.log("And we're done with chunk " + (i + 1) + " " + result);
+            //check if this is the last one, if it is, return response
+            if (i >= (vidChunks.length - 1)) {
+                console.log("We're returning from the webhook sheet function");
+                return {status: "success"};
+            }
         }
 
-        return {status: "success"}
+        //return {status: "success"}
 
     }
 
@@ -375,7 +390,7 @@ class MakeSheet {
                         sortOrder: "DESCENDING",
                         dimensionIndex: 1
                     }
-                    ]
+                ]
             },
         },];
         const resource = {

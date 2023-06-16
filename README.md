@@ -112,6 +112,7 @@ correct.
 * GUI support for larger channels (`1000+` videos)
 * Folder selection directly from Google Drive
 * Improved report formatting
+* Separate webhook statuses for `Updated` and `Already Updated`
 
 ## Bug Reports
 If something behaves unexpectedly, or you run into a problem with the application,

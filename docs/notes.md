@@ -258,15 +258,26 @@ Create a trigger in Monday that will kick off the process to run a report that w
   * Tested with local server
 * Started setting up backend deployment
 
+### 6.16.23
+* Worked on backend deployment
+  * Things seem to be going okay, while using the webhook I'm having a few of the same async/response sending issues that I had with
+  the last YouTube tool, but I'm working through them.
+  * The web application seems to be working good.
+* The webhook won't fill the sheet with data
+  * It seems like AWS is pickier about how your async stuff works than running it locally is
+
 ## TODO
-* Create dependency layer
-* Figure out API Gateway
-* Finish deployment
+* Fix webhook issues
+  * Won't fill in sheet
+  * Won't update Monday if the channel needs to be audited
 
 Next version:
 * Google drive folder selection
 * Table formatting
 * Fix large channel (1000+ vids) GUI google sheet
+* Different updated and already up to date statuses
+* Big refactor
+* Faster web application performance
 
 Dependencies:
 * Vue

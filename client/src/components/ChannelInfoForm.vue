@@ -87,7 +87,7 @@
     </div>
   </form>
   <p>Please note that if the channel has a large amount of content, the tool may take a moment to respond after Submit is selected.
-  If sending a report to Google Sheets, the videos results may also take a moment to load.</p>
+    If sending a report to Google Sheets, the videos results may also take a moment to load.</p>
 </template>
 
 <script>
@@ -189,10 +189,9 @@ export default {
         "Real":
             [{text: "Test 1", value: "Test 1"}, {text: "Test 2", value: "Test 2"}],
         "Fake":
-             [{text: "Fake 1", value: "Fake 1"}, {text: "Fake 2", value: "Fake 2"}]
+            [{text: "Fake 1", value: "Fake 1"}, {text: "Fake 2", value: "Fake 2"}]
       },
       FOLDER_NAMES: [
-        {text: "Test", value: "Test"},
         {text: "Abandoned", value: "Abandoned"},
         {text: "Advancement", value: "Advancement"},
         {text: "Athletics", value: "Athletics"},
@@ -220,6 +219,7 @@ export default {
         {text: "Student Affairs", value: "Student Affairs"},
         {text: "UMAC", value: "UMAC"},
         {text: "Unknown", value: "Unknown"},
+        {text: "Test", value: "Test"},
       ],
       SUB_FOLDER_NAMES: {
         "Test":
