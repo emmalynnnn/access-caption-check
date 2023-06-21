@@ -2,8 +2,8 @@ const MONDAY_API_KEY = process.env.MONDAY_API;
 
 const CAPTION_STATUS_COL = "status_1";
 const DATE_OF_LAST_VIDEO_COL = "date";
-const TRIGGER_COL = "status"; //different on dev/prod
-const LAST_UPDATE_COL = "date9"; //different on dev/prod
+const TRIGGER_COL = "status84"; //different on dev/prod - DEV: status, PROD: status84
+const LAST_UPDATE_COL = "date86"; //different on dev/prod - DEV: date9, PROD: date86
 const SUB_COL = "numbers";
 const VIEWS_COL = "numbers65";
 const NUM_VIDEOS_COL = "numbers7";

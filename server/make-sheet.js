@@ -1,10 +1,8 @@
 const {google} = require("googleapis");
 const privatekey = require("./service_account.json");
 
-var throttle = require('promise-ratelimit')(20);
+var throttle = require('promise-ratelimit')(30);
 
-//const VID_CHUNK_SIZE = 50;
-const VID_CHUNK_SIZE = 4;
 const SHEET_EXTRA = 20;
 
 class MakeSheet {
@@ -56,7 +54,7 @@ class MakeSheet {
 
         for (let i = 0; i < info.length; i++) {
             if (info[i] === "nope") {
-                values.push(["Video found with no content - removed from report."]);
+                values.push(["Upload found with no content - removed from report."]);
             } else {
                 let vidTitle = (info[i].title).replace(/["]+/g, '');
                 let linkTitle = '=HYPERLINK("' + info[i].url + '", "' + vidTitle + '")';
@@ -134,27 +132,8 @@ class MakeSheet {
         let jwtClient = this.authorizeGoogle();
         let sheets = google.sheets({version: 'v4', auth: jwtClient});
 
-        let vidChunks = [[]];
-        let chunkIndex = 0;
-
-        for (let i = 0; i < info.length; i++) {
-            if (vidChunks[chunkIndex].length >= VID_CHUNK_SIZE) {
-                chunkIndex++;
-                vidChunks.push([]);
-            }
-            vidChunks[chunkIndex].push(info[i]);
-        }
-
-        console.log("The video chunks: " + JSON.stringify(vidChunks));
-
-        for (let i = 0; i < vidChunks.length; i++) {
-            console.log(`Sending chunk ${i} to the sheet.`);
-            let result = await this.addChunk(fileId, info, sheets);
-            //check if this is the last one, if it is, return response
-            if (i >= (vidChunks.length - 1)) {
-                return {status: "success"};
-            }
-        }
+        let result = await this.addChunk(fileId, info, sheets);
+        return {status: "success", result: result};
     }
 
     async moveSheet(id, folderId, jwtClient) {

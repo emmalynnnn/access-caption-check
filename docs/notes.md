@@ -277,11 +277,15 @@ Create a trigger in Monday that will kick off the process to run a report that w
   * I'm guessing it's something to do with the video chunks
   * With `QCNRUSU`, each video is list twice
   * Adds each video for every vid chunk that is made
+  * Okay fixed it, it looks like something just got messed up with adding the chunks
+    * I'm going to try to remove the chunk feature because I think we might not need it
+* Increased the waiting time a little bit just to ensure the function has enough time to execute
+* Tested bulk update and GUI again
+* I think we're just about done and ready to release this version!!!
+* Updating docs
+* 
 
 ## TODO
-* Fix webhook issues
-  * Won't fill in sheet
-  * Won't update Monday if the channel needs to be audited
 
 Next version:
 * Google drive folder selection
@@ -290,11 +294,6 @@ Next version:
 * Different updated and already up to date statuses
 * Big refactor
 * Faster web application performance
-
-Dependencies:
-* Vue
-* promise-ratelimit
-* Other stuff that I don't remember off the top of my head cause I've been bad about updating this list
 
 ## Sources/References
 
