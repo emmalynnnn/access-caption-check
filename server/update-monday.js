@@ -34,7 +34,7 @@ class UpdateMonday {
     }
 
     async updateBoard(res, channelInfo) {
-        console.log("Updating board")
+        //console.log("Updating board")
 
         let newDate = channelInfo.mostRecentVideo.date.substring(0, channelInfo.mostRecentVideo.date.indexOf("T"));
 
@@ -63,9 +63,7 @@ class UpdateMonday {
 
         this.postData(url, body, headers)
             .then(result => {
-                console.log(result);
                 this.checkResponse(JSON.stringify(result, null, 2));
-                //this.updateStatus(res, channelInfo, "update");
             })
             .catch(error => {
                 console.log(error);
@@ -74,7 +72,7 @@ class UpdateMonday {
     }
 
     async updateBoardPostAudit(res, channelInfo) {
-        Promise.all(channelInfo.vidInfo).then((vidInfo) => {
+        return Promise.all(channelInfo.vidInfo).then((vidInfo) => {
             console.log("updating the board post audit", channelInfo);
 
             let vidsCaped = 0;
@@ -87,10 +85,6 @@ class UpdateMonday {
                     secCaped += converter.convertToSecond(vidInfo[i].rawDur);
                 }
             }
-
-            /*console.log("The number of vids captioned: " + vidsCaped);
-            console.log("The number of seconds captioned: " + secCaped);
-            console.log("The number of seconds total: " + totSec);*/
 
             let newDate = channelInfo.mostRecentVideo.date.substring(0, channelInfo.mostRecentVideo.date.indexOf("T"));
 
@@ -120,11 +114,15 @@ class UpdateMonday {
                 variables: vars
             };
 
-            this.postData(url, body, headers)
+            return this.postData(url, body, headers)
                 .then(result => {
                     console.log(result);
                     this.checkResponse(JSON.stringify(result, null, 2));
-                    this.updateStatus(res, channelInfo, "update");
+                    return this.updateStatus(res, channelInfo, "update");
+                })
+                .then(result => {
+                    console.log("Updated status: " + result);
+                    return result;
                 })
                 .catch(error => {
                     console.log(error);
@@ -170,7 +168,6 @@ class UpdateMonday {
 
     async updateStatus(res, channelInfo, type) {
         console.log('marking updated: ' + type);
-        //console.log(channelInfo);
         let newStatus = "";
         if (type === "update") {
             newStatus = "Done";
@@ -180,7 +177,6 @@ class UpdateMonday {
             newStatus = "No Content";
         }
         const currentDate = new Date().toJSON().slice(0, 10);
-        //console.log("New date " + currentDate);
         let query = 'mutation ($columnVals: JSON!) { change_multiple_column_values (board_id:' + channelInfo.boardId +
             ', item_id:' + channelInfo.itemId +
             ', column_values:$columnVals) { name id } }';
@@ -203,7 +199,7 @@ class UpdateMonday {
         };
         const url = 'https://api.monday.com/v2';
 
-        this.postData(url, body, headers)
+        return this.postData(url, body, headers)
             .then(result => {
                 console.log(result);
                 this.checkResponse(JSON.stringify(result, null, 2));

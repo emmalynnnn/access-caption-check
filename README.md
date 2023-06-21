@@ -1,5 +1,5 @@
 # YouTube Caption Check Tool
-* Developed by Emma Lynn (a02391851@usu.edu)
+* Developed by Emma Lynn (e.lynn@usu.edu)
 * Supervised by Christopher Phillips, Electronic & Information Technology Accessibility Coordinator (christopher.phillips@usu.edu)
 * On request from Christopher Phillips, Electronic & Information Technology Accessibility Coordinator & Megan Spackman, Caption Program Coordinator
 

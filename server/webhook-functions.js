@@ -6,7 +6,6 @@ const Auditor = require("./auditor");
 const auditor = new Auditor();
 const MakeSheet = require("./make-sheet");
 const makeSheet = new MakeSheet();
-const converter = require("./dur-iso");
 
 var throttle = require('promise-ratelimit')(20);
 
@@ -22,11 +21,9 @@ const MONDAY_API_KEY = process.env.MONDAY_API;
 
 class WebhookFunctions {
     async doMondayYoutube(res, rowInfo) {
-        //let oldMostRecentVid = rowInfo.mostRecentVid;
         return getChannelInfo.updateChannelInfo(res, rowInfo)
             .then(info => {
                 var info = info;
-                //console.log("The info: " + JSON.stringify(info));
                 if (info.status !== undefined) {
                     console.log("There was an error :( " + info.status);
                     if (info.status === "deleted") {
@@ -44,7 +41,6 @@ class WebhookFunctions {
 
                 let newDate = info.mostRecentVideo.date.substring(0, info.mostRecentVideo.date.indexOf("T"));
 
-                //console.log("Old date: " + rowInfo.mostRecentVid, "New date: " + newDate);
                 if (rowInfo.mostRecentVid === newDate) {
                     updateMonday.updateBoard(res, rowInfo);
                     updateMonday.updateStatus(res, info, "update");
@@ -82,8 +78,6 @@ class WebhookFunctions {
                                         vidChunks[chunkIndex].push(results.vidIds[i]);
                                     }
 
-                                    console.log("There are " + vidChunks.length + " chunks of videos.")
-
                                     for (let i = 0; i < vidChunks.length; i++) {
                                         let littleInfo = await this.getChunkOfVids(vidChunks[i]);
                                         console.log("Chunk " + (i + 1));
@@ -103,36 +97,23 @@ class WebhookFunctions {
     }
 
     async getChunkOfVids(vidIds) {
-        //console.log("These vidIds: " + vidIds);
         let vidInfo = [];
-        /*let totSec = 0;
-        let numCap = 0;
-        let secCap = 0;*/
 
         for (let i = 0; i < vidIds.length; i++) {
             await throttle();
             vidInfo.push(auditor.getVidInfo(vidIds[i])
                 .then(result => {
-                    /*let vidSec = converter.convertToSecond(result.rawDur);
-                    totSec += vidSec;
-
-                    if (result.cap === "Yes") {
-                        numCap++;
-                        secCap += vidSec;
-                    }*/
-
-                    //console.log("result", result);
                     return result;
                 }));
         }
-        return {vidInfo: vidInfo/*, totSec: totSec, numCap: numCap, secCap: secCap*/};
+        return {vidInfo: vidInfo};
     }
 
 
     async getChannelId(res, itemId, boardId) {
-        console.log("Getting the channel Id")
+        console.log("Getting the channel Id");
 
-        const colIds = `[text, ${REPORT_COL}, ${MOST_RECENT_VID_COL}, ${NUM_CAP_COL}, ${SEC_COL}, ${SEC_CAP_COL}]`
+        const colIds = `[text, ${REPORT_COL}, ${MOST_RECENT_VID_COL}, ${NUM_CAP_COL}, ${SEC_COL}, ${SEC_CAP_COL}]`;
 
         let query = '{ boards(ids:' + boardId + ') { name items(ids: ' + itemId + ' ) { name id column_values ' +
             '(ids: ' + colIds + ') { text }} } }';
@@ -157,12 +138,10 @@ class WebhookFunctions {
                     mostRecentVid: item.column_values[2].text, capedVids: item.column_values[3].text,
                     secs: item.column_values[4].text, capedSecs: item.column_values[5].text,
                     foldId: foldId, boardId: boardId};
-                //console.log("item, row from in getChannelId", item, row);
 
                 if (item.column_values[0].text === "") {
                     console.log("No channel id given for " + item.name);
-                    //updateMonday.updateStatus(res, row, "error");
-                    row.error = "no channel id"
+                    row.error = "no channel id";
                     return row;
                 }
 
@@ -170,7 +149,6 @@ class WebhookFunctions {
                 return row;
             })
             .catch( err => {
-                //res.status(500).send(err.message);
                 console.log(err.message);
                 return {error: err.message};
             });

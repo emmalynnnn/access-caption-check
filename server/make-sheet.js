@@ -3,12 +3,13 @@ const privatekey = require("./service_account.json");
 
 var throttle = require('promise-ratelimit')(20);
 
-const VID_CHUNK_SIZE = 50;
+//const VID_CHUNK_SIZE = 50;
+const VID_CHUNK_SIZE = 4;
 const SHEET_EXTRA = 20;
 
 class MakeSheet {
     async makeSheet(name, foldNameOrId, isFoldId = false) {
-        console.log("Creating a sheet")
+        console.log("Creating a sheet");
 
         let folderId = foldNameOrId;
         if (!isFoldId) {
@@ -43,15 +44,10 @@ class MakeSheet {
         }
         this.addHeader(response.data.spreadsheetId, jwtClient);
         this.formatSheet(response.data.spreadsheetId, jwtClient);
-        //return res.status(200).json({id: response.data.spreadsheetId});
         return response.data.spreadsheetId;
     }
     async fillSheet(fileId, info, firstIndex) {
         await throttle();
-        console.log("Filling in the sheet!!")
-        //info = JSON.parse(info);
-        //console.log("Adding a new row for " + info.title);
-        //let removed = 0;
 
         let jwtClient = this.authorizeGoogle();
         let sheets = google.sheets({version: 'v4', auth: jwtClient});
@@ -60,13 +56,11 @@ class MakeSheet {
 
         for (let i = 0; i < info.length; i++) {
             if (info[i] === "nope") {
-                //removed++;
-                values.push(["Video found with no content - removed from report."])
+                values.push(["Video found with no content - removed from report."]);
             } else {
-                //console.log("Adding row for " + info[i].title);
                 let vidTitle = (info[i].title).replace(/["]+/g, '');
                 let linkTitle = '=HYPERLINK("' + info[i].url + '", "' + vidTitle + '")';
-                values.push([linkTitle, info[i].date, info[i].dur, info[i].cap, info[i].views, info[i].profile])
+                values.push([linkTitle, info[i].date, info[i].dur, info[i].cap, info[i].views, info[i].profile]);
             }
         }
 
@@ -74,7 +68,6 @@ class MakeSheet {
             values,
         };
 
-        //let range = "Sheet1!A" + (vidNum + 2) + ":F" + (vidNum + 2);
         let range = "Sheet1!A" + (2 + firstIndex) + ":F" + (2 + firstIndex);
 
         sheets.spreadsheets.values.append({
@@ -85,9 +78,6 @@ class MakeSheet {
         }, function (err, response) {
             if (err) {
                 console.log('The API returned an error. ' + err);
-            } else {
-                //console.log('Result:');
-                //console.log(response.data);
             }
         });
 
@@ -113,32 +103,30 @@ class MakeSheet {
 
             let range = "Sheet1!A" + (2) + ":F" + (2);
 
-            console.log("Done making rows for this chunk " + values);
-
-            let result = {status: "working"};
-
-            sheets.spreadsheets.values.append({
-                spreadsheetId: fileId,
-                range: range,
-                valueInputOption: "user_entered",
-                resource: resource
-            }, async function (err, response) {
-                if (err) {
-                    console.log('The API returned an error. ' + err);
-                    return {error: err.message};
-                    //result = {error: err.message};
-                } else {
-                    console.log("We did it!!!!!");
-                    //result = {status: "successful"};
-                    return {status: "successful"};
-                }
-            });
-            return result;
+            return this.actuallyAdd(sheets, fileId, range, resource);
         })
+            .then(result => {
+                return result;
+            })
             .catch(err => {
                 console.log(`There was an error filling in the sheet: ${err.message}`);
                 return {error: err.message};
             });
+    }
+
+    async actuallyAdd(sheets, fileId, range, resource) {
+        try {
+            let response = await sheets.spreadsheets.values.append({
+                spreadsheetId: fileId,
+                range: range,
+                valueInputOption: "user_entered",
+                resource: resource
+            });
+            return response;
+        } catch (err) {
+            console.log(`The API returned an error: ${err.message}`);
+            return err.message;
+        }
     }
 
     async fillSheetWebhook(fileId, info) {
@@ -157,39 +145,20 @@ class MakeSheet {
             vidChunks[chunkIndex].push(info[i]);
         }
 
-        console.log("There are " + vidChunks.length + " chunks of videos")
+        console.log("The video chunks: " + JSON.stringify(vidChunks));
 
         for (let i = 0; i < vidChunks.length; i++) {
-            console.log("Sending chunk " + (i + 1) + " of vids to the sheet");
-            /*this.addChunk(fileId, info, sheets)
-                .then(result => {
-                    console.log("And we're done with chunk " + (i + 1) + " " + result);
-                    //check if this is the last one, if it is, return response
-                    if (i >= (vidChunks.length - 1)) {
-                        console.log("We're returning from the webhook sheet function");
-                        return {status: "success"};
-                    }
-                })
-                .catch(err => {
-                    return {error: err};
-                });*/
-
-            let result = await this.addChunk(fileId, info, sheets)
-            console.log("And we're done with chunk " + (i + 1) + " " + result);
+            console.log(`Sending chunk ${i} to the sheet.`);
+            let result = await this.addChunk(fileId, info, sheets);
             //check if this is the last one, if it is, return response
             if (i >= (vidChunks.length - 1)) {
-                console.log("We're returning from the webhook sheet function");
                 return {status: "success"};
             }
         }
-
-        //return {status: "success"}
-
     }
 
     async moveSheet(id, folderId, jwtClient) {
         console.log("Moving the sheet!!");
-        //let jwtClient = authorizeGoogle();
         const service = google.drive({version: 'v3', auth: jwtClient});
         try {
             // Retrieve the existing parents to remove
@@ -207,8 +176,6 @@ class MakeSheet {
                 removeParents: previousParents,
                 fields: 'id, parents',
             });
-            //console.log(files.status);
-            //console.log("Here is the spreadsheet id from within moveSheet: " + id);
             return undefined;
         } catch (err) {
             console.log("Error while moving the sheet.", err.message);
@@ -216,7 +183,6 @@ class MakeSheet {
                 console.log("Folder id is invalid.");
                 return "folder id is invalid";
             }
-            //throw err;
         }
     }
 

@@ -1,5 +1,4 @@
 const axios = require("axios");
-//require('dotenv').config();
 let YOUTUBE_API_KEY = process.env.YOUTUBE_API;
 let EXTRA_YOUTUBE_KEYS = process.env.EXTRA_YOUTUBE_KEYS;
 
@@ -74,14 +73,11 @@ class Auditor {
             var dayBef = parseInt(pubBefore.substring(8));
         }
 
-        let resultsObj = {numVid: 0, name: "", numCap: 0, totSec: 0, secCap: 0, vidIds: []}
+        let resultsObj = {numVid: 0, name: "", numCap: 0, totSec: 0, secCap: 0, vidIds: []};
 
         if (previousInfo !== undefined) {
             resultsObj.numVid = previousInfo.videoCount;
             resultsObj.name = previousInfo.name;
-            //resultsObj.numCap = previousInfo.capedVids;
-            //resultsObj.totSec = previousInfo.secs;
-            //resultsObj.secCap = previousInfo.capedSecs;
 
             let pagination = false;
             if (resultsObj.numVid > VIDS_ON_PAGE) {
@@ -104,8 +100,8 @@ class Auditor {
             .then( response => {
                 if (response === "key swap needed") {
                     if (retry) {
-                        console.log("Key swap failed.")
-                        throw Error("YouTube Auth Failed.")
+                        console.log("Key swap failed.");
+                        throw Error("YouTube Auth Failed.");
                     } else {
                         console.log("New key: " + YOUTUBE_API_KEY);
                         return this.auditChannel(channelId, format, pubAfter, pubBefore, foldName, previousInfo, true);
@@ -150,12 +146,12 @@ class Auditor {
                     views: json.data.items[0].statistics.viewCount, profile: "No"};
 
                 if (json.data.items[0].hasOwnProperty('liveStreamingDetails')) {
-                    console.log("Found a live stream");
+                    //console.log("Found a live stream");
                     info.profile = "Yes";
                 }
 
                 if (converter.convertToSecond(info.rawDur) === 0 && info.views === "0") {
-                    console.log("Deleting video " + info.title);
+                    //console.log("Deleting video " + info.title);
                     return "nope";
                 }
 
@@ -165,7 +161,6 @@ class Auditor {
                     info.cap = "No";
                 }
 
-                //console.log("info: " + JSON.stringify(info));
                 return info;
             })
             .catch( err => {
@@ -185,8 +180,8 @@ class Auditor {
                     console.log("Extras: " + EXTRA_YOUTUBE_KEYS);
 
                     if (retry) {
-                        console.log("Key swap failed.")
-                        throw Error("YouTube Auth Failed.")
+                        console.log("Key swap failed.");
+                        throw Error("YouTube Auth Failed.");
                     } else {
                         console.log("New key: " + YOUTUBE_API_KEY);
                         return this.getVidInfo(id, tries, true);
@@ -194,10 +189,10 @@ class Auditor {
                 }
 
                 if (err.message === "read ECONNRESET" && tries < ECONNRESET_TRIES) {
-                    console.log(`${id}: Trying again - ${tries}`)
-                    return this.getVidInfo(id, tries + 1)
+                    console.log(`${id}: Trying again - ${tries}`);
+                    return this.getVidInfo(id, tries + 1);
                 } else if (err.message === "read ECONNRESET") {
-                    console.log("Out of retries for ECONNRESET")
+                    console.log("Out of retries for ECONNRESET");
                 }
                 return "nope";
             });
@@ -209,15 +204,15 @@ class Auditor {
             YOUTUBE_API_KEY + "&maxResults=50&part=snippet%2CcontentDetails%2Cstatus";
 
         if (nextPageToken) {
-            url += ("&pageToken=" + nextPageToken)
+            url += ("&pageToken=" + nextPageToken);
         }
 
         return this.getData(url)
             .then( response => {
                 if (response === "key swap needed") {
                     if (retry) {
-                        console.log("Key swap failed.")
-                        throw Error("YouTube Auth Failed.")
+                        console.log("Key swap failed.");
+                        throw Error("YouTube Auth Failed.");
                     } else {
                         console.log("New key: " + YOUTUBE_API_KEY);
                         return this.getVidIds(pagination, resultsObj, playlistId, pubAfter, pubBefore, yearAft, monthAft, dayAft,
@@ -225,30 +220,28 @@ class Auditor {
                     }
                 }
 
-                console.log(response.data)
                 let json = response.data;
 
                 for (let i = 0; i < json.items.length; i++) {
 
                     let id = json.items[i].snippet.resourceId.videoId;
                     let name = json.items[i].snippet.title;
-                    //console.log(name);
                     let dateUploaded = json.items[i].snippet.publishedAt;
 
                     //date filtering:
                     if (pubAfter) {
                         if (parseInt(dateUploaded.substring(0, 4)) < yearAft) {
-                            console.log(name + " is before the year range, moving on.")
+                            console.log(name + " is before the year range, moving on.");
                             resultsObj.numVid--;
                             continue;
                         } else if (parseInt(dateUploaded.substring(0, 4)) === yearAft) {
                             if (parseInt(dateUploaded.substring(5, 7)) < monthAft) {
-                                console.log(name + " is before the month range, moving on.")
+                                console.log(name + " is before the month range, moving on.");
                                 resultsObj.numVid--;
                                 continue;
                             } else if (parseInt(dateUploaded.substring(5, 7)) === monthAft) {
                                 if (parseInt(dateUploaded.substring(8, 10)) < dayAft) {
-                                    console.log(name + " is before the day range, moving on.")
+                                    console.log(name + " is before the day range, moving on.");
                                     resultsObj.numVid--;
                                     continue;
                                 }
@@ -258,7 +251,7 @@ class Auditor {
 
                     if (pubBefore) {
                         if (parseInt(dateUploaded.substring(0, 4)) > yearBef) {
-                            console.log(name + " is after the year range, moving on.")
+                            console.log(name + " is after the year range, moving on.");
                             resultsObj.numVid--;
                             continue;
                         } else if (parseInt(dateUploaded.substring(0, 4)) === yearBef) {
@@ -268,7 +261,7 @@ class Auditor {
                                 continue;
                             } else if (parseInt(dateUploaded.substring(5, 7)) === monthBef) {
                                 if (parseInt(dateUploaded.substring(8, 10)) > dayBef) {
-                                    console.log(name + " is after the day range, moving on.")
+                                    console.log(name + " is after the day range, moving on.");
                                     resultsObj.numVid--;
                                     continue;
                                 }
@@ -280,12 +273,10 @@ class Auditor {
                 }
 
                 if (!pagination) {
-                    //console.log("Andddd we're done");
                     return resultsObj;
                 } else {
                     let newNextPageToken = json.nextPageToken;
                     if (newNextPageToken === undefined) {
-                        //console.log("Andddd we're done");
                         return resultsObj;
                     }
                     return this.getVidIds(pagination, resultsObj, playlistId, pubAfter, pubBefore, yearAft, monthAft, dayAft,

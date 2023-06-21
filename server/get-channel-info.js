@@ -7,9 +7,6 @@ const axios = require('axios');
 class GetChannelInfo {
 
     async updateChannelInfo(res, channelInfo) {
-        //console.log("In updateChannelInfo");
-        //console.log(channelInfo);
-        //console.log(channelInfo.name);
 
         return this.makeChannelAPICall(res, channelInfo);
     }
@@ -90,8 +87,8 @@ class GetChannelInfo {
                 //console.log(dataObj);
                 if (dataObj === "key swap needed") {
                     if (retry) {
-                        console.log("Key swap failed.")
-                        throw Error("YouTube Auth Failed.")
+                        console.log("Key swap failed.");
+                        throw Error("YouTube Auth Failed.");
                     } else {
                         console.log("New key: " + YOUTUBE_API_KEY);
                         return this.makeChannelAPICall(res, channelInfo, true);
@@ -103,8 +100,6 @@ class GetChannelInfo {
 
                     let uploadPlaylistId = validatedResponse.contentDetails.relatedPlaylists.uploads;
 
-                    //console.log("Updating playlist id: " + uploadPlaylistId);
-
                     //updating other info:
                     let subCount = validatedResponse.statistics.subscriberCount;
                     let viewCount = validatedResponse.statistics.viewCount;
@@ -114,8 +109,6 @@ class GetChannelInfo {
                     channelInfo.subscriberCount = subCount;
                     channelInfo.viewCount = viewCount;
                     channelInfo.videoCount = videoCount;
-
-                    //console.log(channelInfo);
 
                     return this.getPlaylistItemInfo(res, channelInfo);
                 } else if (validatedResponse === 1) {
@@ -131,10 +124,9 @@ class GetChannelInfo {
             })
             .catch(error => {
                 console.log(error.message);
-                //res.status(500).send(error.message);
                 channelInfo.status = "error: " + error.message;
                 return channelInfo;
-            })
+            });
     }
 
     async getPlaylistItemInfo(res, channelInfo, retry=false) {
@@ -148,27 +140,18 @@ class GetChannelInfo {
 
                 if (result === "key swap needed") {
                     if (retry) {
-                        console.log("Key swap failed.")
-                        throw Error("YouTube Auth Failed.")
+                        console.log("Key swap failed.");
+                        throw Error("YouTube Auth Failed.");
                     } else {
                         console.log("New key: " + YOUTUBE_API_KEY);
                         return this.getPlaylistItemInfo(res, channelInfo, false);
                     }
                 }
 
-                //console.log("Getting playlist item info")
-                //console.log(result);
                 let dataObj = result;
 
                 let validatedResponse = this.validateResponse(dataObj, 2);
                 if (validatedResponse !== 0 && validatedResponse !== 3) {
-
-                    let playlistItemId = validatedResponse.id;
-                    //channelInfo.updatePlaylistItemId(playlistItemId);
-
-                    //console.log("Updating playlist item id: " + playlistItemId);
-
-                    //this.getVideoInfo(res, channelInfo);
 
                     validatedResponse = this.validateResponse(dataObj, 3);
                     if (validatedResponse !== 0) {
@@ -177,12 +160,8 @@ class GetChannelInfo {
                             date: validatedResponse.contentDetails.videoPublishedAt};
                         channelInfo.mostRecentVideo = recentVideo;
 
-                        //console.log("video info: " + recentVideo.date);
-                        //console.log(channelInfo);
-
                         return channelInfo;
 
-                        //updateMonday.updateBoard(res, channelInfo);
                     } else {
                         console.log("Information could not be found on the most recent video for " + channelInfo.name);
                         updateMonday.updateStatus(res, channelInfo, "error");
@@ -212,7 +191,6 @@ class GetChannelInfo {
                     channelInfo.status = "There is no content on the channel";
                     return channelInfo;
                 } else {
-                    //res.status(500).send(error.message); ADD BACK FOR PRODUCTION!!!
                     channelInfo.status = "Error: " + error.message;
                     return channelInfo;
                 }

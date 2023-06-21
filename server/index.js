@@ -1,4 +1,3 @@
-//require('dotenv').config();
 const {google} = require('googleapis');
 const serverless = require("serverless-http");
 
@@ -12,11 +11,9 @@ const webhook = new WebhookFuncs();
 const Auditor = require("./auditor");
 const auditor = new Auditor();
 const UpdateMonday = require("./update-monday");
-//const cors = require("cors");
 const updateMonday = new UpdateMonday();
 
-const clientUrl = 'https://master.d18gulj4il0z61.amplifyapp.com'
-//const clientUrl = 'http://localhost:8080'
+const clientUrl = 'https://master.d18gulj4il0z61.amplifyapp.com';
 
 const app = express();
 app.use(bodyParser.json());
@@ -47,14 +44,10 @@ app.post("/audit-channel", function(req, res) {
         console.log("end ---------------- / ----------------");
         return res.status(500).json({result: "Error: channel audit failed"});
     });
-})
+});
 
 app.post("/get-vid-info", function(req, res) {
     console.log("---------------- /get-vid-info ----------------");
-    //console.log("About to print the vid params")
-    //console.log(req.body);
-
-    //console.log("The vid info: " + JSON.stringify(req.body.vidInfo));
 
     auditor.getVidInfo(req.body.id)
         .then( results => {
@@ -66,12 +59,10 @@ app.post("/get-vid-info", function(req, res) {
         console.log("end ---------------- /get-vid-info ----------------");
         return res.status(500).json({result: "Error: channel audit failed"});
     });
-})
+});
 
 app.post("/fill-sheet", function(req, res) {
     console.log("---------------- /fill-sheet ----------------");
-
-    //console.log("How many videos? " + req.body.vidInfo.length);
 
     makeSheet.fillSheet(req.body.sheetId, req.body.vidInfo, req.body.firstIndex)
         .then( results => {
@@ -83,13 +74,12 @@ app.post("/fill-sheet", function(req, res) {
             console.log("Error filling in the sheet " + err);
             return res.status(500).json({status: "Failure: " + err});
         });
-})
+});
 
 app.post("/sort-sheet", function(req, res) {
     console.log("---------------- /sort-sheet ----------------");
 
     let sheetId = req.body.sheetId;
-    //let sheetId = "1IR9Ky2Ih0oAWoW864FjTPvK_azQGQNgV3GG32PD3Uvg";
     console.log(sheetId);
 
     makeSheet.sortSheet(sheetId)
@@ -102,14 +92,13 @@ app.post("/sort-sheet", function(req, res) {
             console.log("Error sorting the sheet " + err);
             return res.status(500).json({status: "Failure: " + err});
         });
-})
+});
 
 app.post("/size-sheet", function(req, res) {
     console.log("---------------- /size-sheet ----------------");
 
     let sheetId = req.body.sheetId;
     let vidNum = req.body.vidNum;
-    //let sheetId = "16Ngx3spbffqB9m53XHGHiu5I9-ndIaiPY2KWkm0n5ac";
 
     makeSheet.updateSheetSize(sheetId, vidNum)
         .then( results => {
@@ -122,7 +111,7 @@ app.post("/size-sheet", function(req, res) {
             console.log("Error sorting the sheet " + err);
             return res.status(500).json({status: "Failure: " + err});
         });
-})
+});
 
 app.post("/create-sheet", function (req, res) {
     console.log("---------------- /create-sheet ----------------");
@@ -145,7 +134,7 @@ app.post("/create-sheet", function (req, res) {
     let month = ("0" + (date_ob.getMonth() + 1)).slice(-2);
     let year = date_ob.getFullYear();
 
-    let title = year + "-" + month + "-" + date + " " + name
+    let title = year + "-" + month + "-" + date + " " + name;
 
     const resource = {
         properties: {
@@ -172,7 +161,7 @@ app.post("/create-sheet", function (req, res) {
                 });
         }
     });
-})
+});
 
 app.post("/webhook-endpoint", function(req, res) {
     if (req.body.challenge) {
@@ -200,7 +189,6 @@ app.post("/webhook-endpoint", function(req, res) {
                 } else {
                     webhook.doMondayYoutube(res, rowInfo)
                         .then( info => {
-                            //console.log("The info", info);
                             if (info.status === "folder id is invalid") {
                                 updateMonday.updateStatus(res, info, "error");
                                 console.log("end ---------------- /webhook-endpoint ----------------");
@@ -209,26 +197,22 @@ app.post("/webhook-endpoint", function(req, res) {
                                 console.log("end ---------------- /webhook-endpoint ----------------");
                             } else if (info.status !== "Up to date" && info !== "") {
                                 theInfo = info;
-
-                                console.log("theInfo", theInfo);
-
                                 makeSheet.updateSheetSize(info.sheetId, info.videoCount)
                                     .then(response => {
-                                        console.log(response);
-
-                                        return makeSheet.fillSheetWebhook(theInfo.sheetId, theInfo.vidInfo)
+                                        return makeSheet.fillSheetWebhook(theInfo.sheetId, theInfo.vidInfo);
                                     })
                                     .then(response => {
-                                        console.log("Response", response);
                                         if (response.error !== undefined) {
                                             updateMonday.updateStatus(res, theInfo, "error")
                                                 .then(resp => {
+                                                    console.log("resp " + resp);
                                                     console.log("end ---------------- /webhook-endpoint ----------------");
                                                     res.status(200).send({result: "error"});
                                                 });
                                         } else {
                                             updateMonday.updateBoardPostAudit(res, theInfo)
                                                 .then(resp => {
+                                                    console.log("resp " + resp);
                                                     console.log("end ---------------- /webhook-endpoint ----------------");
                                                     res.status(200).send({result: "success"});
                                                 });

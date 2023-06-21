@@ -1,6 +1,6 @@
-# YTCA Rewrite (YTCA-USU)
+# YouTube Caption Check Tool (YCCT)
 Digital Accessibility Services - Utah State University
-* Created by Emma Lynn (a02391851@usu.edu)
+* Created by Emma Lynn (e.lynn@usu.edu)
 * Supervised by Christopher Phillips, Electronic & Information Technology Accessibility Coordinator (christopher.phillips@usu.edu)
 * On request from Christopher Phillips, Electronic & Information Technology Accessibility Coordinator & Megan Spackman, Caption Program Coordinator
 
@@ -265,6 +265,18 @@ Create a trigger in Monday that will kick off the process to run a report that w
   * The web application seems to be working good.
 * The webhook won't fill the sheet with data
   * It seems like AWS is pickier about how your async stuff works than running it locally is
+
+### 6.21.23
+* Worked on deployment async issues on backend
+* Fixed sheet not filling in issue
+* Now having the duplication issue again
+  * Not observed in the GUI
+  * Observed with `55` videos
+    * Not with `25`
+    * Not with `33`
+  * I'm guessing it's something to do with the video chunks
+  * With `QCNRUSU`, each video is list twice
+  * Adds each video for every vid chunk that is made
 
 ## TODO
 * Fix webhook issues
