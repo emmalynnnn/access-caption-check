@@ -155,7 +155,9 @@ class Auditor {
                     return "nope";
                 }
 
-                if (json.data.items[0].contentDetails.caption) {
+                console.log("Captions? " + json.data.items[0].contentDetails.caption);
+
+                if (json.data.items[0].contentDetails.caption === "true") {
                     info.cap = "Yes";
                 } else {
                     info.cap = "No";
