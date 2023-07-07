@@ -294,6 +294,7 @@ Next version:
 * Different updated and already up to date statuses
 * Big refactor
 * Faster web application performance
+* Bug report form
 
 ## Sources/References
 
