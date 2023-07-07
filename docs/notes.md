@@ -312,6 +312,9 @@ Create a trigger in Monday that will kick off the process to run a report that w
   * Captions are noted by a string, not a boolean
   * Fixed in deployment
 
+### 7.7.23
+* Worked on fixing the google sheets rate limit issue
+
 ## TODO
 
 * Fix google sheets rate limit issue
@@ -323,6 +326,7 @@ Next version:
 * Different updated and already up to date statuses
 * Big refactor
 * Faster web application performance
+* If fails at any point, update status to error
 * Bug report form
 
 ## Sources/References
@@ -339,6 +343,7 @@ YouTube
 Google Drive/Sheets:
 * https://developers.google.com/sheets/api/guides/create 
 * https://developers.google.com/drive/api/guides/folder#create_a_file_in_a_folder
+* https://developers.google.com/sheets/api/limits
 
 
 

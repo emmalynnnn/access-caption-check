@@ -5,8 +5,11 @@ var throttle = require('promise-ratelimit')(30);
 
 const SHEET_EXTRA = 20;
 
+const MAX_BACKOFF = 32000;
+const MAX_TRIES = 75;
+
 class MakeSheet {
-    async makeSheet(name, foldNameOrId, isFoldId = false) {
+    async makeSheet(name, foldNameOrId, isFoldId = false, backoff=1, tries=0) {
         console.log("Creating a sheet");
 
         let folderId = foldNameOrId;
@@ -30,19 +33,40 @@ class MakeSheet {
                 title: title,
             },
         };
-        let response = await sheets.spreadsheets.create({
-            resource,
-            fields: 'spreadsheetId',
-        });
 
-        //console.log(`Moving ${response.data.spreadsheetId} into ${folderId}`);
-        let moveResult = await this.moveSheet(response.data.spreadsheetId, folderId, jwtClient);
-        if (moveResult !== undefined) {
-            return "folder id is invalid";
+        try {
+            let response = await sheets.spreadsheets.create({
+                resource,
+                fields: 'spreadsheetId',
+            });
+
+            //console.log(`Moving ${response.data.spreadsheetId} into ${folderId}`);
+
+            let moveResult = await this.moveSheet(response.data.spreadsheetId, folderId, jwtClient);
+
+            if (moveResult !== undefined) {
+                return "folder id is invalid";
+            }
+            this.addHeader(response.data.spreadsheetId, jwtClient);
+            this.formatSheet(response.data.spreadsheetId, jwtClient);
+            return response.data.spreadsheetId;
+        } catch(err) {
+            if (err.toString().includes("Quota exceeded for quota metric 'Write requests' and limit 'Write requests per minute per user'")) {
+                console.log("Hit sheets rate limit.");
+                if (tries <= MAX_TRIES) {
+                    const waitTime = Math.min(((2 ** backoff) + Math.floor(Math.random() * 1001) + 100), MAX_BACKOFF);
+                    const waiting = require('promise-ratelimit')(waitTime);
+                    const result = await waiting;
+                    console.log(`Trying again- backoff: ${backoff + 1}, tries: ${tries + 1}`);
+                    return await this.makeSheet(name, foldNameOrId, isFoldId, backoff + 1, tries + 1);
+                }
+                else {
+                    console.log("Out of tries :/");
+                }
+            }
+            console.log(err);
+            throw(err);
         }
-        this.addHeader(response.data.spreadsheetId, jwtClient);
-        this.formatSheet(response.data.spreadsheetId, jwtClient);
-        return response.data.spreadsheetId;
     }
     async fillSheet(fileId, info, firstIndex) {
         await throttle();
@@ -112,7 +136,7 @@ class MakeSheet {
             });
     }
 
-    async actuallyAdd(sheets, fileId, range, resource) {
+    async actuallyAdd(sheets, fileId, range, resource, backoff=1, tries=0) {
         try {
             let response = await sheets.spreadsheets.values.append({
                 spreadsheetId: fileId,
@@ -122,8 +146,21 @@ class MakeSheet {
             });
             return response;
         } catch (err) {
-            console.log(`The API returned an error: ${err.message}`);
-            return err.message;
+            if (err.toString().includes("Quota exceeded for quota metric 'Write requests' and limit 'Write requests per minute per user'")) {
+                console.log("Hit sheets rate limit.");
+                if (tries <= MAX_TRIES) {
+                    const waitTime = Math.min(((2 ** backoff) + Math.floor(Math.random() * 1001)), MAX_BACKOFF);
+                    const waiting = require('promise-ratelimit')(waitTime);
+                    const result = await waiting;
+                    console.log(`Trying again- backoff: ${backoff + 1}, tries: ${tries + 1}`);
+                    return await this.actuallyAdd(sheets, fileId, range, resource, backoff + 1, tries + 1);
+                }
+                else {
+                    console.log("Out of tries :/");
+                }
+            }
+            console.log(err);
+            throw(err);
         }
     }
 
@@ -136,7 +173,7 @@ class MakeSheet {
         return {status: "success", result: result};
     }
 
-    async moveSheet(id, folderId, jwtClient) {
+    async moveSheet(id, folderId, jwtClient, backoff=1, tries=0) {
         console.log("Moving the sheet!!");
         const service = google.drive({version: 'v3', auth: jwtClient});
         try {
@@ -162,11 +199,27 @@ class MakeSheet {
                 console.log("Folder id is invalid.");
                 return "folder id is invalid";
             }
+
+            if (err.toString().includes("Quota exceeded for quota metric 'Write requests' and limit 'Write requests per minute per user'")) {
+                console.log("Hit sheets rate limit.");
+                if (tries <= MAX_TRIES) {
+                    const waitTime = Math.min(((2 ** backoff) + Math.floor(Math.random() * 1001)), MAX_BACKOFF);
+                    const waiting = require('promise-ratelimit')(waitTime);
+                    const result = await waiting;
+                    console.log(`Trying again- backoff: ${backoff + 1}, tries: ${tries + 1}`);
+                    return await this.moveSheet(id, folderId, jwtClient, backoff + 1, tries + 1);
+                }
+                else {
+                    console.log("Out of tries :/");
+                }
+            }
+            console.log(err);
+            throw(err);
         }
     }
 
 
-    async addHeader(id, jwtClient) {
+    async addHeader(id, jwtClient, backoff=1, tries=0) {
         let sheets = google.sheets({version: 'v4', auth: jwtClient});
 
         let values = [
@@ -178,22 +231,33 @@ class MakeSheet {
 
         let range = "Sheet1!A1:F1";
 
-        sheets.spreadsheets.values.append({
-            spreadsheetId: id,
-            range: range,
-            valueInputOption: "user_entered",
-            resource: resource
-        }, function (err, response) {
-            if (err) {
-                console.log('The API returned an error. ' + err);
-            } else {
-                //console.log('Result:');
-                //console.log(response.data)
+        try {
+            return await sheets.spreadsheets.values.append({
+                spreadsheetId: id,
+                range: range,
+                valueInputOption: "user_entered",
+                resource: resource
+            });
+        } catch(err) {
+            if (err.toString().includes("Quota exceeded for quota metric 'Write requests' and limit 'Write requests per minute per user'")) {
+                console.log("Hit sheets rate limit.");
+                if (tries <= MAX_TRIES) {
+                    const waitTime = Math.min(((2 ** backoff) + Math.floor(Math.random() * 1001)), MAX_BACKOFF);
+                    const waiting = require('promise-ratelimit')(waitTime);
+                    const result = await waiting;
+                    console.log(`Trying again- backoff: ${backoff + 1}, tries: ${tries + 1}`);
+                    return await this.addHeader(id, jwtClient, backoff + 1, tries + 1);
+                }
+                else {
+                    console.log("Out of tries :/");
+                }
             }
-        });
+            console.log(err);
+            throw(err);
+        }
     }
 
-    async formatSheet(id, jwtClient) {
+    async formatSheet(id, jwtClient, backoff=1, tries=0) {
         let service = google.sheets({version: 'v4', auth: jwtClient});
         const myRange = {
             sheetId: 0
@@ -278,13 +342,26 @@ class MakeSheet {
             //console.log(`${response.data.replies.length} cells updated.`);
             return response;
         } catch (err) {
+            if (err.toString().includes("Quota exceeded for quota metric 'Write requests' and limit 'Write requests per minute per user'")) {
+                console.log("Hit sheets rate limit.");
+                if (tries <= MAX_TRIES) {
+                    const waitTime = Math.min(((2 ** backoff) + Math.floor(Math.random() * 1001)), MAX_BACKOFF);
+                    const waiting = require('promise-ratelimit')(waitTime);
+                    const result = await waiting;
+                    console.log(`Trying again- backoff: ${backoff + 1}, tries: ${tries + 1}`);
+                    return await this.formatSheet(id, jwtClient, backoff + 1, tries + 1);
+                }
+                else {
+                    console.log("Out of tries :/");
+                }
+            }
             console.log(err);
-            //throw err;
+            throw(err);
         }
 
     }
 
-    async updateSheetSize(id, vidNum) {
+    async updateSheetSize(id, vidNum, backoff=1, tries=0) {
         vidNum = parseInt(vidNum);
         let jwtClient = this.authorizeGoogle();
         let sheets = google.sheets({version: 'v4', auth: jwtClient});
@@ -313,12 +390,26 @@ class MakeSheet {
             //console.log(response);
             return response;
         } catch (err) {
+            if (err.toString().includes("Quota exceeded for quota metric 'Write requests' and limit 'Write requests per minute per user'")) {
+                console.log("Hit sheets rate limit.");
+                if (tries <= MAX_TRIES) {
+                    const waitTime = Math.min(((2 ** backoff) + Math.floor(Math.random() * 1001)), MAX_BACKOFF);
+                    console.log(waitTime);
+                    const waiting = require('promise-ratelimit')(waitTime);
+                    const result = await waiting;
+                    console.log(`Trying again- backoff: ${backoff + 1}, tries: ${tries + 1}`);
+                    return await this.updateSheetSize(id, vidNum, backoff + 1, tries + 1);
+                }
+                else {
+                    console.log("Out of tries :/");
+                }
+            }
             console.log(err);
-            throw err;
+            throw(err);
         }
     }
 
-    async sortSheet(id) {
+    async sortSheet(id, backoff=1, tries=0) {
 
         let jwtClient = this.authorizeGoogle();
         let sheets = google.sheets({version: 'v4', auth: jwtClient});
@@ -352,8 +443,21 @@ class MakeSheet {
             //console.log(response);
             return response;
         } catch (err) {
+            if (err.toString().includes("Quota exceeded for quota metric 'Write requests' and limit 'Write requests per minute per user'")) {
+                console.log("Hit sheets rate limit.");
+                if (tries <= MAX_TRIES) {
+                    const waitTime = Math.min(((2 ** backoff) + Math.floor(Math.random() * 1001)), MAX_BACKOFF);
+                    const waiting = require('promise-ratelimit')(waitTime);
+                    const result = await waiting;
+                    console.log(`Trying again- backoff: ${backoff + 1}, tries: ${tries + 1}`);
+                    return await this.sortSheet(id, backoff + 1, tries + 1);
+                }
+                else {
+                    console.log("Out of tries :/");
+                }
+            }
             console.log(err);
-            throw err;
+            throw(err);
         }
     }
 
