@@ -283,9 +283,38 @@ Create a trigger in Monday that will kick off the process to run a report that w
 * Tested bulk update and GUI again
 * I think we're just about done and ready to release this version!!!
 * Updating docs
-* 
+
+### 7.6.23
+* Megan says:
+  ```angular2html
+   Hey Emma! I just tried out the new tool and holy cow! It used to take me all day to do reports and now it takes me 5 seconds! I do have a couple things I noticed. However, I'm wondering if I possibly maxed out the API and that's why it didn't work. I ran all the channels except the two with 1000+ videos. Do I need to do smaller groups? Here are the things I noticed:
+   There are some channels where Monday didn't update to say it had a new video. A report was created, but there's nothing in it:
+   Utah Women & Leadership Project
+   College of Humanities and Social Sciences at USU
+   There are some channels that created the report and updated in Monday, but there's nothing in the report:
+   Institute for Disability
+   Outdoor Product Design & Development
+   And there are some channels where the report was created and it updated, but the report isn't accurate. It's saying everything is captioned:
+   Utah State University Eastern: YouTube | Google Sheet
+   Utah Marriage Commission: YouTube | Google Sheet
+  ```
+* First issue:
+  * `429: too many requests` error from Google sheets API while appending rows
+    * Uncaught exception, so the process never finishes and is never updated on Monday
+    * Permanent fix: add a check that waits and then tries again if it hits that error
+    * Temporary fix: do less updates at a time
+* Second issue:
+  * `429: too many requests` error from Google sheets API while changing the sheet size
+    * Caught exception, so it is updated on Monday as complete
+    * Permanent fix: add a check that waits and then tries again if it hits that error
+    * Temporary fix: do less updates at a time
+* Third issue:
+  * Captions are noted by a string, not a boolean
+  * Fixed in deployment
 
 ## TODO
+
+* Fix google sheets rate limit issue
 
 Next version:
 * Google drive folder selection

@@ -75,7 +75,12 @@ correct.
   * Another error has occurred. If none of the above are applicable and you are unsure
   why the error occurred, please follow the Bug Report instructions below.
 
-## Current version: 1.0.0
+Note that the webhook will only perform a full audit of the channel on a row if the date of the most recent video is different
+between the YouTube API and the column on Monday. To force a row to do a full audit and generate a report anyway, 
+manually change the date of the last video on Monday before changing the `Update now?` column. The date will be corrected 
+again automatically during the update.
+
+## Current version: 1.0.1
 **Features planned for future releases:**
 * GUI support for larger channels (`1000+` videos)
 * Folder selection directly from Google Drive
@@ -86,7 +91,7 @@ correct.
 If something behaves unexpectedly, or you run into a problem with the application,
 please let me know.
 
-Send bug reports to a02391851@usu.edu with the subject line 
+Send bug reports to e.lynn@usu.edu with the subject line 
 "Bug Report - YouTube Caption Check".
 
 Please include:
