@@ -181,6 +181,7 @@ app.post("/webhook-endpoint", function(req, res) {
         console.log("Triggered on " + channelName);
         webhook.getChannelId(res, itemId, boardId)
             .then (rowInfo => {
+
                 if (rowInfo.error !== undefined) {
                     console.log("There was an error getting the row info :(");
                     console.log(rowInfo.error);
@@ -199,11 +200,23 @@ app.post("/webhook-endpoint", function(req, res) {
                                 theInfo = info;
                                 makeSheet.updateSheetSize(info.sheetId, info.videoCount)
                                     .then(response => {
-                                        return makeSheet.fillSheetWebhook(theInfo.sheetId, theInfo.vidInfo);
+                                        if (response === "retry") {
+                                            updateMonday.updateStatus(res, info, "retry");
+                                            console.log("end ---------------- /webhook-endpoint ----------------");
+                                        } else {
+                                            return makeSheet.fillSheetWebhook(theInfo.sheetId, theInfo.vidInfo);
+                                        }
                                     })
                                     .then(response => {
                                         if (response.error !== undefined) {
                                             updateMonday.updateStatus(res, theInfo, "error")
+                                                .then(resp => {
+                                                    console.log("resp " + resp);
+                                                    console.log("end ---------------- /webhook-endpoint ----------------");
+                                                    res.status(200).send({result: "error"});
+                                                });
+                                        } else if (response.status === "retry") {
+                                            updateMonday.updateStatus(res, theInfo, "retry")
                                                 .then(resp => {
                                                     console.log("resp " + resp);
                                                     console.log("end ---------------- /webhook-endpoint ----------------");

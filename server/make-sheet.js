@@ -3,10 +3,14 @@ const privatekey = require("./service_account.json");
 
 var throttle = require('promise-ratelimit')(30);
 
+const UpdateMonday = require("./update-monday");
+const updateMonday = new UpdateMonday();
+
 const SHEET_EXTRA = 20;
 
 const MAX_BACKOFF = 32000;
-const MAX_TRIES = 75;
+const MAX_TRIES = 200;//75;
+const TIME_BASE = 4;
 
 class MakeSheet {
     async makeSheet(name, foldNameOrId, isFoldId = false, backoff=1, tries=0) {
@@ -47,14 +51,23 @@ class MakeSheet {
             if (moveResult !== undefined) {
                 return "folder id is invalid";
             }
-            this.addHeader(response.data.spreadsheetId, jwtClient);
-            this.formatSheet(response.data.spreadsheetId, jwtClient);
+            if (moveResult === "retry") {
+                return "retry";
+            }
+            let headerResp = await this.addHeader(response.data.spreadsheetId, jwtClient);
+            if (headerResp === "retry") {
+                return "retry";
+            }
+            let formatResp = await this.formatSheet(response.data.spreadsheetId, jwtClient);
+            if (formatResp === "retry") {
+                return "retry";
+            }
             return response.data.spreadsheetId;
         } catch(err) {
             if (err.toString().includes("Quota exceeded for quota metric 'Write requests' and limit 'Write requests per minute per user'")) {
                 console.log("Hit sheets rate limit.");
                 if (tries <= MAX_TRIES) {
-                    const waitTime = Math.min(((2 ** backoff) + Math.floor(Math.random() * 1001) + 100), MAX_BACKOFF);
+                    const waitTime = Math.min(((TIME_BASE ** backoff) + Math.floor(Math.random() * 1001) + 100), MAX_BACKOFF);
                     const waiting = require('promise-ratelimit')(waitTime);
                     const result = await waiting;
                     console.log(`Trying again- backoff: ${backoff + 1}, tries: ${tries + 1}`);
@@ -62,6 +75,7 @@ class MakeSheet {
                 }
                 else {
                     console.log("Out of tries :/");
+                    return "retry";
                 }
             }
             console.log(err);
@@ -149,7 +163,7 @@ class MakeSheet {
             if (err.toString().includes("Quota exceeded for quota metric 'Write requests' and limit 'Write requests per minute per user'")) {
                 console.log("Hit sheets rate limit.");
                 if (tries <= MAX_TRIES) {
-                    const waitTime = Math.min(((2 ** backoff) + Math.floor(Math.random() * 1001)), MAX_BACKOFF);
+                    const waitTime = Math.min(((TIME_BASE ** backoff) + Math.floor(Math.random() * 1001)), MAX_BACKOFF);
                     const waiting = require('promise-ratelimit')(waitTime);
                     const result = await waiting;
                     console.log(`Trying again- backoff: ${backoff + 1}, tries: ${tries + 1}`);
@@ -157,6 +171,7 @@ class MakeSheet {
                 }
                 else {
                     console.log("Out of tries :/");
+                    return "retry";
                 }
             }
             console.log(err);
@@ -170,6 +185,9 @@ class MakeSheet {
         let sheets = google.sheets({version: 'v4', auth: jwtClient});
 
         let result = await this.addChunk(fileId, info, sheets);
+        if (result === "retry") {
+            return {status: "retry"};
+        }
         return {status: "success", result: result};
     }
 
@@ -203,7 +221,7 @@ class MakeSheet {
             if (err.toString().includes("Quota exceeded for quota metric 'Write requests' and limit 'Write requests per minute per user'")) {
                 console.log("Hit sheets rate limit.");
                 if (tries <= MAX_TRIES) {
-                    const waitTime = Math.min(((2 ** backoff) + Math.floor(Math.random() * 1001)), MAX_BACKOFF);
+                    const waitTime = Math.min(((TIME_BASE ** backoff) + Math.floor(Math.random() * 1001)), MAX_BACKOFF);
                     const waiting = require('promise-ratelimit')(waitTime);
                     const result = await waiting;
                     console.log(`Trying again- backoff: ${backoff + 1}, tries: ${tries + 1}`);
@@ -211,6 +229,7 @@ class MakeSheet {
                 }
                 else {
                     console.log("Out of tries :/");
+                    return "retry";
                 }
             }
             console.log(err);
@@ -242,7 +261,7 @@ class MakeSheet {
             if (err.toString().includes("Quota exceeded for quota metric 'Write requests' and limit 'Write requests per minute per user'")) {
                 console.log("Hit sheets rate limit.");
                 if (tries <= MAX_TRIES) {
-                    const waitTime = Math.min(((2 ** backoff) + Math.floor(Math.random() * 1001)), MAX_BACKOFF);
+                    const waitTime = Math.min(((TIME_BASE ** backoff) + Math.floor(Math.random() * 1001)), MAX_BACKOFF);
                     const waiting = require('promise-ratelimit')(waitTime);
                     const result = await waiting;
                     console.log(`Trying again- backoff: ${backoff + 1}, tries: ${tries + 1}`);
@@ -250,6 +269,7 @@ class MakeSheet {
                 }
                 else {
                     console.log("Out of tries :/");
+                    return "retry";
                 }
             }
             console.log(err);
@@ -345,7 +365,7 @@ class MakeSheet {
             if (err.toString().includes("Quota exceeded for quota metric 'Write requests' and limit 'Write requests per minute per user'")) {
                 console.log("Hit sheets rate limit.");
                 if (tries <= MAX_TRIES) {
-                    const waitTime = Math.min(((2 ** backoff) + Math.floor(Math.random() * 1001)), MAX_BACKOFF);
+                    const waitTime = Math.min(((TIME_BASE ** backoff) + Math.floor(Math.random() * 1001)), MAX_BACKOFF);
                     const waiting = require('promise-ratelimit')(waitTime);
                     const result = await waiting;
                     console.log(`Trying again- backoff: ${backoff + 1}, tries: ${tries + 1}`);
@@ -353,6 +373,7 @@ class MakeSheet {
                 }
                 else {
                     console.log("Out of tries :/");
+                    return "retry";
                 }
             }
             console.log(err);
@@ -393,7 +414,7 @@ class MakeSheet {
             if (err.toString().includes("Quota exceeded for quota metric 'Write requests' and limit 'Write requests per minute per user'")) {
                 console.log("Hit sheets rate limit.");
                 if (tries <= MAX_TRIES) {
-                    const waitTime = Math.min(((2 ** backoff) + Math.floor(Math.random() * 1001)), MAX_BACKOFF);
+                    const waitTime = Math.min(((TIME_BASE ** backoff) + Math.floor(Math.random() * 1001)), MAX_BACKOFF);
                     console.log(waitTime);
                     const waiting = require('promise-ratelimit')(waitTime);
                     const result = await waiting;
@@ -402,6 +423,7 @@ class MakeSheet {
                 }
                 else {
                     console.log("Out of tries :/");
+                    return "retry";
                 }
             }
             console.log(err);
@@ -446,7 +468,7 @@ class MakeSheet {
             if (err.toString().includes("Quota exceeded for quota metric 'Write requests' and limit 'Write requests per minute per user'")) {
                 console.log("Hit sheets rate limit.");
                 if (tries <= MAX_TRIES) {
-                    const waitTime = Math.min(((2 ** backoff) + Math.floor(Math.random() * 1001)), MAX_BACKOFF);
+                    const waitTime = Math.min(((TIME_BASE ** backoff) + Math.floor(Math.random() * 1001)), MAX_BACKOFF);
                     const waiting = require('promise-ratelimit')(waitTime);
                     const result = await waiting;
                     console.log(`Trying again- backoff: ${backoff + 1}, tries: ${tries + 1}`);
@@ -454,6 +476,7 @@ class MakeSheet {
                 }
                 else {
                     console.log("Out of tries :/");
+                    return "retry";
                 }
             }
             console.log(err);

@@ -175,6 +175,9 @@ class UpdateMonday {
             newStatus = "Error";
         } else if (type === "no content") {
             newStatus = "No Content";
+        } else if (type === "retry") {
+            console.log("we did it!");
+            newStatus = "Retry Needed";
         }
         const currentDate = new Date().toJSON().slice(0, 10);
         let query = 'mutation ($columnVals: JSON!) { change_multiple_column_values (board_id:' + channelInfo.boardId +

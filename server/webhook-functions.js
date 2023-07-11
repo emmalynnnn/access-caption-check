@@ -59,6 +59,12 @@ class WebhookFunctions {
                             if (id === "folder id is invalid") {
                                 info.status = "folder id is invalid";
                                 return info;
+                            } else if (id === "retry") {
+                                updateMonday.updateStatus(res, info, "retry")
+                                    .then(result => {
+                                        console.log(result);
+                                        throw("Retry needed - too many requests");
+                                    });
                             }
                             info.sheetId = id;
                             return auditor.auditChannel(info.channelId, "Sheets", "", "", "ID found", info)
