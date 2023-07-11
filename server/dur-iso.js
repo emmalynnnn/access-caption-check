@@ -22,6 +22,8 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+Bugs fixed by Emma Lynn.
 */
 
 exports.convertDuration = (duration) => {
@@ -141,85 +143,52 @@ exports.convertToSecond = (duration) => {
 };
 
 exports.convertYouTubeDuration = (duration) => {
-    const durationResult = exports.convertDuration(duration);
-
-    if (durationResult === null) {
-        return null;
+    let parsed = converter.convertDuration(duration);
+    if (!parsed.hour) {
+        parsed.hour = 0;
     }
 
-    let hour = 0;
-    let minute = 0;
-    let second = 0;
+    let formatted = "";
 
-    if (durationResult.year !== undefined) {
-        hour += durationResult.year * 365 * 24;
+    if (parsed.year) {
+        parsed.hour += (8760 * parsed.year);
+    }
+    if (parsed.month) {
+        parsed.hour += (730 * parsed.month);
+    }
+    if (parsed.day) {
+        parsed.hour += (24 * parsed.day);
     }
 
-    if (durationResult.month !== undefined) {
-        hour += durationResult.month * 30 * 24;
-    }
-
-    if (durationResult.day !== undefined) {
-        hour += durationResult.day * 24;
-    }
-
-    if (durationResult.hour !== undefined) {
-        hour += durationResult.hour;
-    }
-
-    if (durationResult.minute !== undefined) {
-        minute += durationResult.minute;
-    }
-
-    if (durationResult.second !== undefined) {
-        second += durationResult.second;
-    }
-
-    minute += (hour - Math.floor(hour)) * 60;
-    hour = Math.floor(hour);
-
-    while (minute >= 60) {
-        hour += 1;
-        minute -= 60;
-    }
-
-    second += (minute - Math.floor(minute)) * 60;
-    minute = Math.floor(minute);
-
-    while (second >= 60) {
-        minute += 1;
-        second -= 60;
-    }
-
-    while (minute >= 60) {
-        hour += 1;
-        minute -= 60;
-    }
-
-    second = Math.round(second);
-
-    let hms = '';
-
-    if (hour !== 0) {
-        hms += `${hour.toString()}:`;
-    } else if (hour === 0) {
-        hms += `00:`;
-    }
-
-    if (minute === 10 /*&& hour !== 0*/) {
-        hms += `00${minute.toString()}.`;
-    }
-    if (minute < 10 /*&& hour !== 0*/) {
-        hms += `0${minute.toString()}.`;
+    if (parsed.hour) {
+        if (parsed.hour.toString().length === 1) {
+            formatted += ("0" + parsed.hour + ":");
+        } else {
+            formatted += (parsed.hour + ":");
+        }
     } else {
-        hms += `${minute.toString()}.`;
+        formatted += "00:";
     }
 
-    if (second < 10) {
-        hms += `0${second.toString()}`;
+    if (parsed.minute) {
+        if (parsed.minute.toString().length === 1) {
+            formatted += ("0" + parsed.minute + ".");
+        } else {
+            formatted += (parsed.minute + ".");
+        }
     } else {
-        hms += second.toString();
+        formatted += "00.";
     }
 
-    return hms;
+    if (parsed.second) {
+        if (parsed.second.toString().length === 1) {
+            formatted += ("0" + parsed.second);
+        } else {
+            formatted += parsed.second;
+        }
+    } else {
+        formatted += "00";
+    }
+
+    return formatted;
 };

@@ -315,9 +315,11 @@ Create a trigger in Monday that will kick off the process to run a report that w
 ### 7.7.23
 * Worked on fixing the google sheets rate limit issue
 
-## TODO
+### 7.11.23
+* Fixed sheets rate limit issue
+* Fixed duration issue
 
-* Fix google sheets rate limit issue
+## TODO
 
 Next version:
 * Google drive folder selection
